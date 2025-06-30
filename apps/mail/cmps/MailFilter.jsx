@@ -9,6 +9,7 @@ export function MailFilter({ onSetFilter }) {
     function handleChange(ev) {
         const { name, value } = ev.target
         let val
+
         if (name === 'isRead') {
             if (value === 'all') {
                 val = null
@@ -21,19 +22,18 @@ export function MailFilter({ onSetFilter }) {
             val = value
         }
 
-        setFilterBy(prevFilterBy => {
-            const newFilterBy = { ...prevFilterBy, [name]: val }
-            onSetFilter(newFilterBy)
-            return newFilterBy
-        })
+        const newFilterBy = { ...filterBy, [name]: val }
+        setFilterBy(newFilterBy)   // update local state
+        onSetFilter(newFilterBy)   // notify parent
     }
+
 
     return (
         <section className="mail-filter">
             <input
                 type="text"
                 name="txt"
-                placeholder="Search mails..."
+                placeholder="Search mail..."
                 value={filterBy.txt}
                 onChange={handleChange}
             />

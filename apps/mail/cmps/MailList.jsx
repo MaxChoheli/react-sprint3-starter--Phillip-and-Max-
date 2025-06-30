@@ -1,10 +1,14 @@
 export function MailList({ mails }) {
+  if (!mails.length) return <div>No mail to show</div>
+
   return (
-    <section className="mail-list">
-      {mails.length === 0 && <p>No mails to show</p>}
+    <ul className="mail-list">
       {mails.map(mail => (
-        <MailPreview key={mail.id} mail={mail} />
+        <li key={mail.id} className={mail.isRead ? 'read' : 'unread'}>
+          <h4>{mail.subject}</h4>
+          <p>{mail.body}</p>
+        </li>
       ))}
-    </section>
+    </ul>
   )
 }
