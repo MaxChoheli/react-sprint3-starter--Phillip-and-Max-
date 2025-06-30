@@ -6,6 +6,7 @@ export const mailService = {
   remove,
   save,
   getLoggedinUser,
+  initDemoData,
 }
 
 const MAIL_KEY = 'mailDB'
@@ -38,18 +39,29 @@ const demoMails = [
   },
 ]
 
-function query(filterBy = { status: 'inbox', txt: '', isRead: null }) {
+// Call once at app startup to seed demo mails if storage is empty
+function initDemoData() {
   return storageService.query(MAIL_KEY).then(mails => {
     if (!mails || !mails.length) {
-      mails = demoMails
-      mails.forEach(mail => storageService.post(MAIL_KEY, mail))
+      return Promise.all(demoMails.map(mail => storageService.post(MAIL_KEY, mail)))
     }
+    return mails
+  })
+}
+
+function query(filterBy = { status: '', txt: '', isRead: null }) {
+  return storageService.query(MAIL_KEY).then(mails => {
+
+    console.log('Before filtering:', mails)
 
     // Filter by inbox/sent/etc.
     if (filterBy.status === 'inbox') {
       mails = mails.filter(mail => mail.to === loggedinUser.email && !mail.removedAt)
     } else if (filterBy.status === 'sent') {
       mails = mails.filter(mail => mail.from === loggedinUser.email && !mail.removedAt)
+    } else {
+      // no status or unknown: return all mails not removed
+      mails = mails.filter(mail => !mail.removedAt)
     }
 
     // Filter by search text
@@ -62,7 +74,8 @@ function query(filterBy = { status: 'inbox', txt: '', isRead: null }) {
     if (filterBy.isRead !== null) {
       mails = mails.filter(mail => mail.isRead === filterBy.isRead)
     }
-    
+
+    console.log('After filtering:', mails)
     return mails
   })
 }
@@ -80,7 +93,6 @@ function save(mail) {
     ? storageService.put(MAIL_KEY, mail)
     : storageService.post(MAIL_KEY, mail)
 }
-
 
 function getLoggedinUser() {
   return loggedinUser

@@ -5,21 +5,32 @@ import { MailList } from '../cmps/MailList.jsx'
 import { mailService } from '../services/mail.service.js'
 
 export function MailIndex() {
-  const [filterBy, setFilterBy] = useState({ txt: '', isRead: null })
+  const [filterBy, setFilterBy] = useState({ status: '', txt: '', isRead: null })
   const [mails, setMails] = useState([])
 
-  // When filterBy changes, fetch mails from mailService
+  // Initialize demo mails
   useEffect(() => {
-    mailService.query(filterBy).then(setMails)
+    mailService.initDemoData().then(() => {
+      loadMails(filterBy)
+    })
+  }, [])
+
+  // When filter changes, load mails
+  useEffect(() => {
+    loadMails(filterBy)
   }, [filterBy])
 
-  // Called when MailFilter changes filter
+  function loadMails(filter) {
+    mailService.query(filter).then(setMails)
+  }
+
   function onSetFilter(newFilter) {
     setFilterBy(newFilter)
   }
 
   return (
-    <section className="container">Mail app
+    <section className="container">
+      <h2>Mail app</h2>
       <MailFilter onSetFilter={onSetFilter} />
       <MailList mails={mails} />
     </section>

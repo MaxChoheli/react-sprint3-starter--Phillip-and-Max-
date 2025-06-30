@@ -27,7 +27,6 @@ export function MailFilter({ onSetFilter }) {
         onSetFilter(newFilterBy)   // notify parent
     }
 
-
     return (
         <section className="mail-filter">
             <input
