@@ -62,7 +62,7 @@ function query(filterBy = { status: 'inbox', txt: '', isRead: null }) {
     if (filterBy.isRead !== null) {
       mails = mails.filter(mail => mail.isRead === filterBy.isRead)
     }
-
+    
     return mails
   })
 }
