@@ -13,41 +13,45 @@ export function NoteList({ notes, onDelete, onUpdate }) {
 function NoteItem({ note, onDelete, onUpdate }) {
     const [isEditing, setIsEditing] = React.useState(false)
     const [txt, setTxt] = React.useState(note.info.txt)
-    const [bgColor, setBgColor] = React.useState(
-        (note.style && note.style.backgroundColor) || '#ffffff'
-    )
-    const [isWhiteText, setIsWhiteText] = React.useState(false)
-    const [position, setPosition] = React.useState({ x: 0, y: 0 })
+    const [bgColor, setBgColor] = React.useState((note.style && note.style.backgroundColor) || '#ffffff')
+    const [isWhiteText, setIsWhiteText] = React.useState((note.style && note.style.color) === '#ffffff')
+    const [position, setPosition] = React.useState({
+        x: (note.style && note.style.left) || 0,
+        y: (note.style && note.style.top) || 0
+    })
     const [isDragging, setIsDragging] = React.useState(false)
     const STATIC_OFFSET = { x: -170, y: -320 }
 
     function onSave() {
         setIsEditing(false)
+        const updatedStyle = {
+            backgroundColor: bgColor,
+            color: isWhiteText ? '#ffffff' : '#000000',
+            left: position.x,
+            top: position.y
+        }
         const updatedNote = {
             ...note,
             info: { txt },
-            style: {
-                backgroundColor: bgColor,
-                color: isWhiteText ? '#ffffff' : '#000000'
-            }
+            style: updatedStyle
         }
-        onUpdate(note.id, txt, bgColor)
+        onUpdate(note.id, txt, bgColor, updatedStyle)
     }
 
     function onColorChange(ev) {
         setBgColor(ev.target.value)
     }
 
-    function handleMouseDown() {
+    function handleMouseDown(ev) {
         setIsDragging(true)
+        ev.preventDefault()
     }
 
     function handleMouseMove(ev) {
         if (!isDragging) return
-        setPosition({
-            x: ev.clientX + STATIC_OFFSET.x,
-            y: ev.clientY + STATIC_OFFSET.y
-        })
+        const x = ev.clientX + STATIC_OFFSET.x
+        const y = ev.clientY + STATIC_OFFSET.y
+        setPosition({ x, y })
     }
 
     function handleMouseUp() {
@@ -69,14 +73,29 @@ function NoteItem({ note, onDelete, onUpdate }) {
         }
     }, [isDragging])
 
+    React.useEffect(() => {
+        const updatedStyle = {
+            backgroundColor: bgColor,
+            color: isWhiteText ? '#ffffff' : '#000000',
+            left: position.x,
+            top: position.y
+        }
+        const updatedNote = {
+            ...note,
+            info: { txt },
+            style: updatedStyle
+        }
+        onUpdate(note.id, txt, bgColor, updatedStyle)
+    }, [position])
+
     return (
-        <article
+        <div
             className="note-item"
             onMouseDown={handleMouseDown}
             style={{
                 position: 'absolute',
-                left: `${position.x}px`,
-                top: `${position.y}px`,
+                left: position.x + 'px',
+                top: position.y + 'px',
                 backgroundColor: bgColor,
                 color: isWhiteText ? '#ffffff' : '#000000',
                 cursor: isDragging ? 'grabbing' : 'grab'
@@ -84,18 +103,9 @@ function NoteItem({ note, onDelete, onUpdate }) {
         >
             {isEditing ? (
                 <div>
-                    <textarea
-                        value={txt}
-                        onChange={(e) => setTxt(e.target.value)}
-                    />
-                    <input
-                        type="color"
-                        value={bgColor}
-                        onChange={onColorChange}
-                    />
-                    <button onClick={() => setIsWhiteText(prev => !prev)}>
-                        Toggle Text Color
-                    </button>
+                    <textarea value={txt} onChange={(e) => setTxt(e.target.value)} />
+                    <input type="color" value={bgColor} onChange={onColorChange} />
+                    <button onClick={() => setIsWhiteText(prev => !prev)}>Toggle Text Color</button>
                     <button onClick={onSave}>Save</button>
                 </div>
             ) : (
@@ -105,6 +115,6 @@ function NoteItem({ note, onDelete, onUpdate }) {
                 </div>
             )}
             <button onClick={() => onDelete(note.id)}>Delete</button>
-        </article>
+        </div>
     )
 }

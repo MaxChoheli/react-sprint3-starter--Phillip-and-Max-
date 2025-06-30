@@ -42,3 +42,16 @@ function _createDemoNotes() {
         localStorage.setItem(NOTE_KEY, JSON.stringify(notes))
     }
 }
+
+function handleUpdate(noteId, newTxt, newBgColor, newTxtColor, newPos) {
+    noteService.get(noteId).then(note => {
+        if (!note) return
+        note.info.txt = newTxt
+        note.style = {
+            backgroundColor: newBgColor,
+            color: newTxtColor
+        }
+        note.pos = newPos
+        noteService.save(note).then(loadNotes)
+    })
+}

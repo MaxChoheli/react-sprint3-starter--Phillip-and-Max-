@@ -22,6 +22,12 @@ export function NoteIndex() {
         const newNote = {
             type: 'NoteTxt',
             info: { txt: newTxt },
+            style: {
+                backgroundColor: '#ffffff',
+                color: '#000000',
+                left: 0,
+                top: 0
+            },
             createdAt: Date.now()
         }
         noteService.save(newNote).then(() => {
@@ -34,15 +40,24 @@ export function NoteIndex() {
         noteService.remove(noteId).then(loadNotes)
     }
 
-    function onUpdateNote(noteId, newText, newBgColor = null) {
+    function onUpdateNote(noteId, newText, newBgColor = null, newStyle = null) {
         const note = notes.find(note => note.id === noteId)
         const updatedNote = {
             ...note,
             info: { txt: newText },
             style: {
-                backgroundColor: newBgColor !== null && newBgColor !== undefined
-                    ? newBgColor
-                    : (note.style && note.style.backgroundColor) || '#ffffff'
+                backgroundColor: newStyle && newStyle.backgroundColor
+                    ? newStyle.backgroundColor
+                    : (note.style && note.style.backgroundColor) || '#ffffff',
+                color: newStyle && newStyle.color
+                    ? newStyle.color
+                    : (note.style && note.style.color) || '#000000',
+                left: newStyle && typeof newStyle.left === 'number'
+                    ? newStyle.left
+                    : (note.style && note.style.left) || 0,
+                top: newStyle && typeof newStyle.top === 'number'
+                    ? newStyle.top
+                    : (note.style && note.style.top) || 0
             }
         }
         noteService.save(updatedNote).then(loadNotes)
