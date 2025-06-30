@@ -13,24 +13,96 @@ export function NoteList({ notes, onDelete, onUpdate }) {
 function NoteItem({ note, onDelete, onUpdate }) {
     const [isEditing, setIsEditing] = React.useState(false)
     const [txt, setTxt] = React.useState(note.info.txt)
+    const [bgColor, setBgColor] = React.useState(
+        (note.style && note.style.backgroundColor) || '#ffffff'
+    )
+    const [isWhiteText, setIsWhiteText] = React.useState(false)
+    const [position, setPosition] = React.useState({ x: 0, y: 0 })
+    const [isDragging, setIsDragging] = React.useState(false)
+    const STATIC_OFFSET = { x: -170, y: -320 }
 
     function onSave() {
         setIsEditing(false)
-        onUpdate(note.id, txt)
+        const updatedNote = {
+            ...note,
+            info: { txt },
+            style: {
+                backgroundColor: bgColor,
+                color: isWhiteText ? '#ffffff' : '#000000'
+            }
+        }
+        onUpdate(note.id, txt, bgColor)
     }
 
+    function onColorChange(ev) {
+        setBgColor(ev.target.value)
+    }
+
+    function handleMouseDown() {
+        setIsDragging(true)
+    }
+
+    function handleMouseMove(ev) {
+        if (!isDragging) return
+        setPosition({
+            x: ev.clientX + STATIC_OFFSET.x,
+            y: ev.clientY + STATIC_OFFSET.y
+        })
+    }
+
+    function handleMouseUp() {
+        setIsDragging(false)
+    }
+
+    React.useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove)
+            window.addEventListener('mouseup', handleMouseUp)
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove)
+            window.removeEventListener('mouseup', handleMouseUp)
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove)
+            window.removeEventListener('mouseup', handleMouseUp)
+        }
+    }, [isDragging])
+
     return (
-        <article className="note-item">
+        <article
+            className="note-item"
+            onMouseDown={handleMouseDown}
+            style={{
+                position: 'absolute',
+                left: `${position.x}px`,
+                top: `${position.y}px`,
+                backgroundColor: bgColor,
+                color: isWhiteText ? '#ffffff' : '#000000',
+                cursor: isDragging ? 'grabbing' : 'grab'
+            }}
+        >
             {isEditing ? (
-                <React.Fragment>
-                    <textarea value={txt} onChange={(e) => setTxt(e.target.value)} />
+                <div>
+                    <textarea
+                        value={txt}
+                        onChange={(e) => setTxt(e.target.value)}
+                    />
+                    <input
+                        type="color"
+                        value={bgColor}
+                        onChange={onColorChange}
+                    />
+                    <button onClick={() => setIsWhiteText(prev => !prev)}>
+                        Toggle Text Color
+                    </button>
                     <button onClick={onSave}>Save</button>
-                </React.Fragment>
+                </div>
             ) : (
-                <React.Fragment>
+                <div>
                     <p>{note.info.txt}</p>
                     <button onClick={() => setIsEditing(true)}>Edit</button>
-                </React.Fragment>
+                </div>
             )}
             <button onClick={() => onDelete(note.id)}>Delete</button>
         </article>
