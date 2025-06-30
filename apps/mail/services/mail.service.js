@@ -2,6 +2,9 @@ import { storageService } from '../../../services/async-storage.service.js'
 
 export const mailService = {
   query,
+  get,
+  remove,
+  save,
   getLoggedinUser,
 }
 
@@ -63,6 +66,21 @@ function query(filterBy = { status: 'inbox', txt: '', isRead: null }) {
     return mails
   })
 }
+
+function get(mailId) {
+  return storageService.get(MAIL_KEY, mailId)
+}
+
+function remove(mailId) {
+  return storageService.remove(MAIL_KEY, mailId)
+}
+
+function save(mail) {
+  return mail.id
+    ? storageService.put(MAIL_KEY, mail)
+    : storageService.post(MAIL_KEY, mail)
+}
+
 
 function getLoggedinUser() {
   return loggedinUser
