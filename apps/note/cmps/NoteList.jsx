@@ -43,9 +43,16 @@ function NoteItem({ note, onDelete, onUpdate }) {
     }
 
     function handleMouseDown(ev) {
+        if (
+            ev.target.tagName === 'TEXTAREA' ||
+            ev.target.tagName === 'INPUT' ||
+            ev.target.tagName === 'BUTTON'
+        ) {
+            return
+        }
         setIsDragging(true)
-        ev.preventDefault()
     }
+
 
     function handleMouseMove(ev) {
         if (!isDragging) return
