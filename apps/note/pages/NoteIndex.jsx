@@ -42,8 +42,14 @@ export function NoteIndex() {
             setNewTitle('')
             setNewLabel('')
             setNewColor('#ffffff')
+            const txtArea = document.querySelector('.note-form textarea')
+            if (txtArea) {
+                txtArea.style.height = 'auto'
+                txtArea.style.width = 'auto'
+            }
             loadNotes()
         })
+
     }
 
     function onDeleteNote(noteId) {
@@ -77,6 +83,20 @@ export function NoteIndex() {
         noteService.save(updatedNote).then(loadNotes)
     }
 
+    function handleAutoResize(ev) {
+        const el = ev.target
+        const processed = el.value.replace(/(\S{30})/g, '$1\u200B')
+        setNewTxt(processed)
+        el.style.height = 'auto'
+        el.style.height = el.scrollHeight + 'px'
+        el.style.width = 'auto'
+        if (el.scrollWidth < 400) {
+            el.style.width = el.scrollWidth + 'px'
+        } else {
+            el.style.width = '400px'
+        }
+    }
+
     return (
         <section className="note-index">
             <h1>MissKeep</h1>
@@ -87,11 +107,18 @@ export function NoteIndex() {
                     value={newTitle}
                     onChange={(ev) => setNewTitle(ev.target.value)}
                 />
-                <input
-                    type="text"
+                <textarea
                     placeholder="Write a note..."
                     value={newTxt}
-                    onChange={(ev) => setNewTxt(ev.target.value)}
+                    onChange={handleAutoResize}
+                    style={{
+                        resize: 'none',
+                        minWidth: '200px',
+                        maxWidth: '400px',
+                        overflow: 'hidden',
+                        height: 'auto',
+                        width: 'auto'
+                    }}
                 />
                 <select value={newLabel} onChange={(ev) => setNewLabel(ev.target.value)}>
                     <option value="">Label</option>

@@ -15,11 +15,11 @@ function NoteItem({ note, onDelete, onUpdate }) {
     const [txt, setTxt] = React.useState(note.info.txt)
     const [title, setTitle] = React.useState(note.info.title || '')
     const [label, setLabel] = React.useState(note.info.label || '')
-    const [bgColor, setBgColor] = React.useState((note.style && note.style.backgroundColor) || '#ffffff')
-    const [isWhiteText, setIsWhiteText] = React.useState((note.style && note.style.color) === '#ffffff')
+    const [bgColor, setBgColor] = React.useState(note.style && note.style.backgroundColor ? note.style.backgroundColor : '#ffffff')
+    const [isWhiteText, setIsWhiteText] = React.useState(note.style && note.style.color === '#ffffff')
     const [position, setPosition] = React.useState({
-        x: (note.style && note.style.left) || 0,
-        y: (note.style && note.style.top) || 0
+        x: note.style && note.style.left ? note.style.left : 0,
+        y: note.style && note.style.top ? note.style.top : 0
     })
     const [isDragging, setIsDragging] = React.useState(false)
     const STATIC_OFFSET = { x: -170, y: -320 }
@@ -105,7 +105,8 @@ function NoteItem({ note, onDelete, onUpdate }) {
                 top: position.y + 'px',
                 backgroundColor: bgColor,
                 color: isWhiteText ? '#ffffff' : '#000000',
-                cursor: isDragging ? 'grabbing' : 'grab'
+                cursor: isDragging ? 'grabbing' : 'grab',
+                maxWidth: '400px'
             }}
         >
             {isEditing ? (
@@ -119,6 +120,24 @@ function NoteItem({ note, onDelete, onUpdate }) {
                     <textarea
                         value={txt}
                         onChange={(e) => setTxt(e.target.value)}
+                        style={{
+                            resize: 'none',
+                            width: '100%',
+                            minWidth: '200px',
+                            maxWidth: '400px',
+                            height: 'auto',
+                            overflow: 'hidden'
+                        }}
+                        onInput={(e) => {
+                            e.target.style.height = 'auto'
+                            e.target.style.height = e.target.scrollHeight + 'px'
+                            e.target.style.width = 'auto'
+                            if (e.target.scrollWidth < 400) {
+                                e.target.style.width = e.target.scrollWidth + 'px'
+                            } else {
+                                e.target.style.width = '400px'
+                            }
+                        }}
                     />
                     <select value={label} onChange={(e) => setLabel(e.target.value)}>
                         <option value="">Label</option>
