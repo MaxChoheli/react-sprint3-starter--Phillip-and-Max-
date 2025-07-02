@@ -11,6 +11,9 @@ export function NoteIndex() {
     const [newTitle, setNewTitle] = useState('')
     const [newLabel, setNewLabel] = useState('')
     const [newColor, setNewColor] = useState('#ffffff')
+    const [filterByTxt, setFilterByTxt] = useState('')
+    const [filterByType, setFilterByType] = useState('')
+    const [filterByLabel, setFilterByLabel] = useState('')
 
     useEffect(() => {
         loadNotes()
@@ -49,7 +52,6 @@ export function NoteIndex() {
             }
             loadNotes()
         })
-
     }
 
     function onDeleteNote(noteId) {
@@ -63,21 +65,13 @@ export function NoteIndex() {
             info: {
                 txt: newText,
                 title: newTitle !== null ? newTitle : note.info.title,
-                label: newLabel !== null ? newLabel : note.info.label || ''
+                label: newLabel !== null ? newLabel : (note.info.label || '')
             },
             style: {
-                backgroundColor: newStyle && newStyle.backgroundColor
-                    ? newStyle.backgroundColor
-                    : (note.style && note.style.backgroundColor) || '#ffffff',
-                color: newStyle && newStyle.color
-                    ? newStyle.color
-                    : (note.style && note.style.color) || '#000000',
-                left: newStyle && typeof newStyle.left === 'number'
-                    ? newStyle.left
-                    : (note.style && note.style.left) || 0,
-                top: newStyle && typeof newStyle.top === 'number'
-                    ? newStyle.top
-                    : (note.style && note.style.top) || 0
+                backgroundColor: (newStyle && newStyle.backgroundColor) || (note.style && note.style.backgroundColor) || '#ffffff',
+                color: (newStyle && newStyle.color) || (note.style && note.style.color) || '#000000',
+                left: (newStyle && typeof newStyle.left === 'number') ? newStyle.left : (note.style && note.style.left) || 0,
+                top: (newStyle && typeof newStyle.top === 'number') ? newStyle.top : (note.style && note.style.top) || 0
             }
         }
         noteService.save(updatedNote).then(loadNotes)
@@ -85,17 +79,26 @@ export function NoteIndex() {
 
     function handleAutoResize(ev) {
         const el = ev.target
-        const processed = el.value.replace(/(\S{30})/g, '$1\u200B')
-        setNewTxt(processed)
+        const softBreakTxt = el.value.replace(/(\S{30})/g, '$1\u200B')
+        setNewTxt(softBreakTxt)
         el.style.height = 'auto'
         el.style.height = el.scrollHeight + 'px'
         el.style.width = 'auto'
-        if (el.scrollWidth < 400) {
-            el.style.width = el.scrollWidth + 'px'
-        } else {
-            el.style.width = '400px'
-        }
+        el.style.width = el.scrollWidth < 400 ? el.scrollWidth + 'px' : '400px'
     }
+
+    const filteredNotes = notes.filter(note => {
+        const title = (note.info.title || '').toLowerCase()
+        const txt = (note.info.txt || '').toLowerCase()
+        const label = note.info.label || ''
+        const type = note.type || ''
+        return (
+            title.includes(filterByTxt.toLowerCase()) ||
+            txt.includes(filterByTxt.toLowerCase())
+        ) &&
+            (filterByType === '' || type === filterByType) &&
+            (filterByLabel === '' || label === filterByLabel)
+    })
 
     return (
         <section className="note-index">
@@ -139,8 +142,33 @@ export function NoteIndex() {
                 <button>Add</button>
             </form>
 
+            <section className="note-filter">
+                <input
+                    type="text"
+                    placeholder="Search..."
+                    value={filterByTxt}
+                    onChange={(ev) => setFilterByTxt(ev.target.value)}
+                />
+                <select value={filterByType} onChange={(ev) => setFilterByType(ev.target.value)}>
+                    <option value="">All Types</option>
+                    <option value="NoteTxt">Text</option>
+                    <option value="NoteImg">Image</option>
+                    <option value="NoteVideo">Video</option>
+                </select>
+                <select value={filterByLabel} onChange={(ev) => setFilterByLabel(ev.target.value)}>
+                    <option value="">All Labels</option>
+                    <option value="critical">Critical</option>
+                    <option value="family">Family</option>
+                    <option value="work">Work</option>
+                    <option value="friends">Friends</option>
+                    <option value="spam">Spam</option>
+                    <option value="memories">Memories</option>
+                    <option value="romantic">Romantic</option>
+                </select>
+            </section>
+
             <NoteList
-                notes={notes}
+                notes={filteredNotes}
                 onDelete={onDeleteNote}
                 onUpdate={onUpdateNote}
             />

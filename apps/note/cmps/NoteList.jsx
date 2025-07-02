@@ -95,6 +95,16 @@ function NoteItem({ note, onDelete, onUpdate }) {
         onUpdate(note.id, txt, bgColor, updatedStyle, title, label)
     }, [position])
 
+    function handleEditTxtResize(ev) {
+        const el = ev.target
+        const softBreakTxt = el.value.replace(/(\S{30})/g, '$1\u200B')
+        setTxt(softBreakTxt)
+        el.style.height = 'auto'
+        el.style.height = el.scrollHeight + 'px'
+        el.style.width = 'auto'
+        el.style.width = el.scrollWidth < 400 ? el.scrollWidth + 'px' : '400px'
+    }
+
     return (
         <div
             className="note-item"
@@ -116,10 +126,11 @@ function NoteItem({ note, onDelete, onUpdate }) {
                         value={title}
                         placeholder="Title"
                         onChange={(e) => setTitle(e.target.value)}
+                        style={{ fontWeight: 'bold', textTransform: 'uppercase' }}
                     />
                     <textarea
                         value={txt}
-                        onChange={(e) => setTxt(e.target.value)}
+                        onChange={handleEditTxtResize}
                         style={{
                             resize: 'none',
                             width: '100%',
@@ -128,16 +139,7 @@ function NoteItem({ note, onDelete, onUpdate }) {
                             height: 'auto',
                             overflow: 'hidden'
                         }}
-                        onInput={(e) => {
-                            e.target.style.height = 'auto'
-                            e.target.style.height = e.target.scrollHeight + 'px'
-                            e.target.style.width = 'auto'
-                            if (e.target.scrollWidth < 400) {
-                                e.target.style.width = e.target.scrollWidth + 'px'
-                            } else {
-                                e.target.style.width = '400px'
-                            }
-                        }}
+                        onInput={handleEditTxtResize}
                     />
                     <select value={label} onChange={(e) => setLabel(e.target.value)}>
                         <option value="">Label</option>
@@ -155,7 +157,7 @@ function NoteItem({ note, onDelete, onUpdate }) {
                 </div>
             ) : (
                 <div>
-                    <h4>{note.info.title}</h4>
+                    <h4 style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>{note.info.title}</h4>
                     <p>{note.info.txt}</p>
                     {note.info.label && <p className="note-label">#{note.info.label}</p>}
                     <button onClick={() => setIsEditing(true)}>Edit</button>
