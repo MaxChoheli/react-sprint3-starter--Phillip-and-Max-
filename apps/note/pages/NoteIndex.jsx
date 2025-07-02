@@ -8,6 +8,9 @@ const { useState, useEffect } = React
 export function NoteIndex() {
     const [notes, setNotes] = useState([])
     const [newTxt, setNewTxt] = useState('')
+    const [newTitle, setNewTitle] = useState('')
+    const [newLabel, setNewLabel] = useState('')
+    const [newColor, setNewColor] = useState('#ffffff')
 
     useEffect(() => {
         loadNotes()
@@ -21,9 +24,13 @@ export function NoteIndex() {
         ev.preventDefault()
         const newNote = {
             type: 'NoteTxt',
-            info: { txt: newTxt },
+            info: {
+                title: newTitle,
+                txt: newTxt,
+                label: newLabel
+            },
             style: {
-                backgroundColor: '#ffffff',
+                backgroundColor: newColor,
                 color: '#000000',
                 left: 0,
                 top: 0
@@ -32,6 +39,9 @@ export function NoteIndex() {
         }
         noteService.save(newNote).then(() => {
             setNewTxt('')
+            setNewTitle('')
+            setNewLabel('')
+            setNewColor('#ffffff')
             loadNotes()
         })
     }
@@ -40,11 +50,15 @@ export function NoteIndex() {
         noteService.remove(noteId).then(loadNotes)
     }
 
-    function onUpdateNote(noteId, newText, newBgColor = null, newStyle = null) {
+    function onUpdateNote(noteId, newText, newBgColor = null, newStyle = null, newTitle = null, newLabel = null) {
         const note = notes.find(note => note.id === noteId)
         const updatedNote = {
             ...note,
-            info: { txt: newText },
+            info: {
+                txt: newText,
+                title: newTitle !== null ? newTitle : note.info.title,
+                label: newLabel !== null ? newLabel : note.info.label || ''
+            },
             style: {
                 backgroundColor: newStyle && newStyle.backgroundColor
                     ? newStyle.backgroundColor
@@ -69,9 +83,31 @@ export function NoteIndex() {
             <form onSubmit={onAddNote} className="note-form">
                 <input
                     type="text"
+                    placeholder="Title"
+                    value={newTitle}
+                    onChange={(ev) => setNewTitle(ev.target.value)}
+                />
+                <input
+                    type="text"
                     placeholder="Write a note..."
                     value={newTxt}
                     onChange={(ev) => setNewTxt(ev.target.value)}
+                />
+                <select value={newLabel} onChange={(ev) => setNewLabel(ev.target.value)}>
+                    <option value="">Label</option>
+                    <option value="critical">Critical</option>
+                    <option value="family">Family</option>
+                    <option value="work">Work</option>
+                    <option value="friends">Friends</option>
+                    <option value="spam">Spam</option>
+                    <option value="memories">Memories</option>
+                    <option value="romantic">Romantic</option>
+                </select>
+                <input
+                    type="color"
+                    value={newColor}
+                    onChange={(ev) => setNewColor(ev.target.value)}
+                    title="Choose background color"
                 />
                 <button>Add</button>
             </form>

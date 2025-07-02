@@ -13,6 +13,8 @@ export function NoteList({ notes, onDelete, onUpdate }) {
 function NoteItem({ note, onDelete, onUpdate }) {
     const [isEditing, setIsEditing] = React.useState(false)
     const [txt, setTxt] = React.useState(note.info.txt)
+    const [title, setTitle] = React.useState(note.info.title || '')
+    const [label, setLabel] = React.useState(note.info.label || '')
     const [bgColor, setBgColor] = React.useState((note.style && note.style.backgroundColor) || '#ffffff')
     const [isWhiteText, setIsWhiteText] = React.useState((note.style && note.style.color) === '#ffffff')
     const [position, setPosition] = React.useState({
@@ -32,10 +34,10 @@ function NoteItem({ note, onDelete, onUpdate }) {
         }
         const updatedNote = {
             ...note,
-            info: { txt },
+            info: { txt, title, label },
             style: updatedStyle
         }
-        onUpdate(note.id, txt, bgColor, updatedStyle)
+        onUpdate(note.id, txt, bgColor, updatedStyle, title, label)
     }
 
     function onColorChange(ev) {
@@ -46,13 +48,11 @@ function NoteItem({ note, onDelete, onUpdate }) {
         if (
             ev.target.tagName === 'TEXTAREA' ||
             ev.target.tagName === 'INPUT' ||
-            ev.target.tagName === 'BUTTON'
-        ) {
-            return
-        }
+            ev.target.tagName === 'BUTTON' ||
+            ev.target.tagName === 'SELECT'
+        ) return
         setIsDragging(true)
     }
-
 
     function handleMouseMove(ev) {
         if (!isDragging) return
@@ -89,10 +89,10 @@ function NoteItem({ note, onDelete, onUpdate }) {
         }
         const updatedNote = {
             ...note,
-            info: { txt },
+            info: { txt, title, label },
             style: updatedStyle
         }
-        onUpdate(note.id, txt, bgColor, updatedStyle)
+        onUpdate(note.id, txt, bgColor, updatedStyle, title, label)
     }, [position])
 
     return (
@@ -110,14 +110,35 @@ function NoteItem({ note, onDelete, onUpdate }) {
         >
             {isEditing ? (
                 <div>
-                    <textarea value={txt} onChange={(e) => setTxt(e.target.value)} />
+                    <input
+                        type="text"
+                        value={title}
+                        placeholder="Title"
+                        onChange={(e) => setTitle(e.target.value)}
+                    />
+                    <textarea
+                        value={txt}
+                        onChange={(e) => setTxt(e.target.value)}
+                    />
+                    <select value={label} onChange={(e) => setLabel(e.target.value)}>
+                        <option value="">Label</option>
+                        <option value="critical">Critical</option>
+                        <option value="family">Family</option>
+                        <option value="work">Work</option>
+                        <option value="friends">Friends</option>
+                        <option value="spam">Spam</option>
+                        <option value="memories">Memories</option>
+                        <option value="romantic">Romantic</option>
+                    </select>
                     <input type="color" value={bgColor} onChange={onColorChange} />
                     <button onClick={() => setIsWhiteText(prev => !prev)}>Toggle Text Color</button>
                     <button onClick={onSave}>Save</button>
                 </div>
             ) : (
                 <div>
+                    <h4>{note.info.title}</h4>
                     <p>{note.info.txt}</p>
+                    {note.info.label && <p className="note-label">#{note.info.label}</p>}
                     <button onClick={() => setIsEditing(true)}>Edit</button>
                 </div>
             )}
