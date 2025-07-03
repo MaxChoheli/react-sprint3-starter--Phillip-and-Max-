@@ -39,14 +39,18 @@ const demoMails = [
   },
 ]
 
-// Call once at app startup to seed demo mails if storage is empty
 function initDemoData() {
   return storageService.query(MAIL_KEY).then(mails => {
-    if (!mails || !mails.length) {
-      return Promise.all(demoMails.map(mail => storageService.post(MAIL_KEY, mail)))
-    }
-    return mails
+    if (mails.length) return mails
+
+    // Directly save the whole demoMails array at once instead of individually
+    _save(MAIL_KEY, demoMails)
+    return demoMails
   })
+}
+
+function _save(entityType, entities) {
+  localStorage.setItem(entityType, JSON.stringify(entities))
 }
 
 function query(filterBy = { status: '', txt: '', isRead: null }) {
@@ -54,23 +58,19 @@ function query(filterBy = { status: '', txt: '', isRead: null }) {
 
     console.log('Before filtering:', mails)
 
-    // Filter by inbox/sent/etc.
     if (filterBy.status === 'inbox') {
       mails = mails.filter(mail => mail.to === loggedinUser.email && !mail.removedAt)
     } else if (filterBy.status === 'sent') {
       mails = mails.filter(mail => mail.from === loggedinUser.email && !mail.removedAt)
     } else {
-      // no status or unknown: return all mails not removed
       mails = mails.filter(mail => !mail.removedAt)
     }
 
-    // Filter by search text
     if (filterBy.txt) {
       const regex = new RegExp(filterBy.txt, 'i')
       mails = mails.filter(mail => regex.test(mail.subject) || regex.test(mail.body))
     }
 
-    // Filter by read/unread
     if (filterBy.isRead !== null) {
       mails = mails.filter(mail => mail.isRead === filterBy.isRead)
     }

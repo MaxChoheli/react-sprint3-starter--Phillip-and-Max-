@@ -7,15 +7,17 @@ import { mailService } from '../services/mail.service.js'
 export function MailIndex() {
   const [filterBy, setFilterBy] = useState({ status: '', txt: '', isRead: null })
   const [mails, setMails] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Initialize demo mails
+  // On mount, seed demo mails and load mails
   useEffect(() => {
     mailService.initDemoData().then(() => {
       loadMails(filterBy)
+      setIsLoading(false)
     })
   }, [])
 
-  // When filter changes, load mails
+  // Reload mails whenever filter changes
   useEffect(() => {
     loadMails(filterBy)
   }, [filterBy])
@@ -28,11 +30,14 @@ export function MailIndex() {
     setFilterBy(newFilter)
   }
 
+  if (isLoading) return <div>Loading mails...</div>
+
   return (
-    <section className="container">
+    <section className="container mail-index">
       <h2>Mail app</h2>
-      <MailFilter onSetFilter={onSetFilter} />
+      <MailFilter filterBy={filterBy} onSetFilter={onSetFilter} />
       <MailList mails={mails} />
     </section>
   )
 }
+
