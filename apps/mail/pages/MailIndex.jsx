@@ -5,7 +5,7 @@ import { MailFolderList } from '../cmps/MailFolderList.jsx'
 import { mailService } from '../services/mail.service.js'
 
 export function MailIndex() {
-  const [filterBy, setFilterBy] = useState({ status: '', txt: '', isRead: null })
+  const [filterBy, setFilterBy] = useState({ status: 'inbox', txt: '', isRead: null })
   const [mails, setMails] = useState([])
 
   useEffect(() => {
@@ -31,11 +31,15 @@ export function MailIndex() {
   }
 
   return (
-    <section className="container">
-      <h2>Mail app</h2>
-      <MailFolderList currentStatus={filterBy.status} onSetStatus={onSetFolder} />
-      <MailFilter onSetFilter={onSetFilter} />
-      <MailList mails={mails} />
+    <section className="mail-index">
+      <aside className="mail-sidebar">
+        <MailFolderList currentStatus={filterBy.status} onSetFolder={onSetFolder} />
+      </aside>
+
+      <main className="mail-main">
+        <MailFilter onSetFilter={onSetFilter} />
+        <MailList mails={mails} />
+      </main>
     </section>
   )
 }

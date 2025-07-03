@@ -1,1 +1,23 @@
  /* mail index  */
+
+ .mail-index {
+  display: flex;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.mail-sidebar {
+  width: 240px;
+  padding: 20px;
+  border-right: 1px solid #dadce0;
+  background-color: #f1f3f4;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mail-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}

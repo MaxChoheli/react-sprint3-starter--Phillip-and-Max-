@@ -1,4 +1,4 @@
-export function MailFolderList({ currentStatus, onSetStatus }) {
+export function MailFolderList({ currentStatus, onSetFolder }) {
   const folders = ['inbox', 'sent', 'trash', 'draft']
 
   return (
@@ -7,7 +7,7 @@ export function MailFolderList({ currentStatus, onSetStatus }) {
         <button
           key={folder}
           className={folder === currentStatus ? 'active' : ''}
-          onClick={() => onSetStatus(folder)}
+          onClick={() => onSetFolder(folder)}
         >
           {folder.charAt(0).toUpperCase() + folder.slice(1)}
         </button>
