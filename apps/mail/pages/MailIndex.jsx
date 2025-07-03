@@ -1,23 +1,19 @@
 const { useState, useEffect } = React
-
 import { MailFilter } from '../cmps/MailFilter.jsx'
 import { MailList } from '../cmps/MailList.jsx'
+import { MailFolderList } from '../cmps/MailFolderList.jsx'
 import { mailService } from '../services/mail.service.js'
 
 export function MailIndex() {
   const [filterBy, setFilterBy] = useState({ status: '', txt: '', isRead: null })
   const [mails, setMails] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
 
-  // On mount, seed demo mails and load mails
   useEffect(() => {
     mailService.initDemoData().then(() => {
       loadMails(filterBy)
-      setIsLoading(false)
     })
   }, [])
 
-  // Reload mails whenever filter changes
   useEffect(() => {
     loadMails(filterBy)
   }, [filterBy])
@@ -27,17 +23,19 @@ export function MailIndex() {
   }
 
   function onSetFilter(newFilter) {
-    setFilterBy(newFilter)
+    setFilterBy(prev => ({ ...prev, ...newFilter }))
   }
 
-  if (isLoading) return <div>Loading mails...</div>
+  function onSetFolder(folder) {
+    setFilterBy(prev => ({ ...prev, status: folder }))
+  }
 
   return (
-    <section className="container mail-index">
+    <section className="container">
       <h2>Mail app</h2>
-      <MailFilter filterBy={filterBy} onSetFilter={onSetFilter} />
+      <MailFolderList currentStatus={filterBy.status} onSetStatus={onSetFolder} />
+      <MailFilter onSetFilter={onSetFilter} />
       <MailList mails={mails} />
     </section>
   )
 }
-

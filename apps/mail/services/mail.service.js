@@ -58,13 +58,18 @@ function query(filterBy = { status: '', txt: '', isRead: null }) {
 
     console.log('Before filtering:', mails)
 
-    if (filterBy.status === 'inbox') {
-      mails = mails.filter(mail => mail.to === loggedinUser.email && !mail.removedAt)
-    } else if (filterBy.status === 'sent') {
-      mails = mails.filter(mail => mail.from === loggedinUser.email && !mail.removedAt)
-    } else {
-      mails = mails.filter(mail => !mail.removedAt)
-    }
+   if (filterBy.status === 'inbox') {
+  mails = mails.filter(mail => mail.to === loggedinUser.email && !mail.removedAt)
+} else if (filterBy.status === 'sent') {
+  mails = mails.filter(mail => mail.from === loggedinUser.email && !mail.removedAt)
+} else if (filterBy.status === 'trash') {
+  mails = mails.filter(mail => mail.removedAt)
+} else if (filterBy.status === 'draft') {
+  mails = mails.filter(mail => mail.isDraft)
+} else {
+  // 'all' or unknown
+  mails = mails.filter(mail => !mail.removedAt && !mail.isDraft)
+}
 
     if (filterBy.txt) {
       const regex = new RegExp(filterBy.txt, 'i')
