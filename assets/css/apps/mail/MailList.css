@@ -1,1 +1,16 @@
  /* mail list */
+ 
+.mail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  font-family: Arial, sans-serif;
+}
+
+.mail-list li {
+  
+  border: none;
+  padding: 0;
+  margin: 0;
+}
