@@ -3,7 +3,7 @@ const { useState } = React
 export function MailFilter({ onSetFilter }) {
   const [filterBy, setFilterBy] = useState({
     txt: '',
-    isRead: null, // null means show all
+    isRead: null,
   })
 
   function handleChange(ev) {
@@ -25,28 +25,32 @@ export function MailFilter({ onSetFilter }) {
 
   return (
     <section className="mail-filter">
-      <input
-        type="text"
-        name="txt"
-        placeholder="Search mail..."
-        value={filterBy.txt}
-        onChange={handleChange}
-      />
-      <select
-        name="isRead"
-        value={
-          filterBy.isRead === null
-            ? 'all'
-            : filterBy.isRead === true
-            ? 'read'
-            : 'unread'
-        }
-        onChange={handleChange}
-      >
-        <option value="all">All</option>
-        <option value="read">Read</option>
-        <option value="unread">Unread</option>
-      </select>
+      <div className="search-bar">
+        <span className="material-icons">search</span>
+        <input
+          type="text"
+          name="txt"
+          placeholder="Search mail"
+          value={filterBy.txt}
+          onChange={handleChange}
+        />
+        <select
+          name="isRead"
+          value={
+            filterBy.isRead === null
+              ? 'all'
+              : filterBy.isRead === true
+                ? 'read'
+                : 'unread'
+          }
+          onChange={handleChange}
+        >
+          <option value="all">All</option>
+          <option value="read">Read</option>
+          <option value="unread">Unread</option>
+        </select>
+      </div>
     </section>
   )
 }
+
