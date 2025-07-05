@@ -1,15 +1,21 @@
-export function MailFolderList({ currentStatus, onSetStatus }) {
-  const folders = ['inbox', 'sent', 'trash', 'draft']
+export function MailFolderList({ currentStatus, onSetFolder }) {
+  const folders = [
+    { key: 'inbox', label: 'Inbox', icon: 'inbox' },
+    { key: 'sent', label: 'Sent', icon: 'send' },
+    { key: 'trash', label: 'Trash', icon: 'delete' },
+    { key: 'draft', label: 'Drafts', icon: 'drafts' },
+  ]
 
   return (
     <nav className="mail-folder-list">
       {folders.map(folder => (
         <button
-          key={folder}
-          className={folder === currentStatus ? 'active' : ''}
-          onClick={() => onSetStatus(folder)}
+          key={folder.key}
+          className={`folder-btn ${folder.key === currentStatus ? 'active' : ''}`}
+          onClick={() => onSetFolder(folder.key)}
         >
-          {folder.charAt(0).toUpperCase() + folder.slice(1)}
+          <span className="material-icons">{folder.icon}</span>
+          <span>{folder.label}</span>
         </button>
       ))}
     </nav>

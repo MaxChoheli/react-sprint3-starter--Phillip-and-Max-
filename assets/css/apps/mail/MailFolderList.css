@@ -1,0 +1,43 @@
+.mail-folder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  width: 240px;
+  background-color: #f6f8fc;
+  border-right: 1px solid #e0e0e0;
+}
+
+.folder-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #202124;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 0 24px 24px 0;
+  transition: background-color 0.2s ease;
+}
+
+.folder-btn .material-icons {
+  font-size: 20px;
+  color: #5f6368;
+}
+
+.folder-btn:hover {
+  background-color: #e8f0fe;
+}
+
+.folder-btn.active {
+  background-color: #d2e3fc;
+  color: #1a73e8;
+  font-weight: 500;
+}
+
+.folder-btn.active .material-icons {
+  color: #1a73e8;
+}
