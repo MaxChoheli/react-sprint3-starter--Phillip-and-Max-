@@ -10,19 +10,25 @@ import { MailDetails } from './apps/mail/pages/MailDetails.jsx'
 import { NoteIndex } from './apps/note/pages/NoteIndex.jsx'
 import { BooksWrapper } from './pages/BooksWrapper.jsx'
 
+const { useState } = React
+
 export function RootCmp() {
-    return <Router>
-        <section className="root-cmp">
-            <AppHeader />
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/mail" element={<MailIndex />} />
-                <Route path="/mail/:mailId" element={<MailDetails />} />
-                <Route path="/note" element={<NoteIndex />} />
-                <Route path="/books" element={<BooksWrapper />} />
-            </Routes>
-            <UserMsg />
-        </section>
-    </Router>
+    const [filterByTxt, setFilterByTxt] = useState('')
+
+    return (
+        <Router>
+            <section className="root-cmp">
+                <AppHeader filterByTxt={filterByTxt} setFilterByTxt={setFilterByTxt} />
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/mail" element={<MailIndex />} />
+                    <Route path="/mail/:mailId" element={<MailDetails />} />
+                    <Route path="/note" element={<NoteIndex filterByTxt={filterByTxt} setFilterByTxt={setFilterByTxt} />} />
+                    <Route path="/books" element={<BooksWrapper />} />
+                </Routes>
+                <UserMsg />
+            </section>
+        </Router>
+    )
 }

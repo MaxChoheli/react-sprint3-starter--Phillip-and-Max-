@@ -14,3 +14,30 @@ nav a.active {
     font-weight: bold;
     text-decoration: overline;
 }
+
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #f2f2f2;
+}
+
+.left-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.misskeep-logo {
+    font-size: 1.3rem;
+    color: #ff9800;
+}
+
+.misskeep-search {
+    padding: 0.4rem 0.8rem;
+    font-size: 1rem;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    outline: none;
+}
