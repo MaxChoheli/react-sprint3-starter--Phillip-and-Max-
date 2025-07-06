@@ -67,3 +67,24 @@
   color: #5f6368;
   cursor: pointer;
 }
+
+.compose-btn {
+  background-color: #c2e7ff;
+  color: #001d35;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 24px;
+  margin: 16px;
+  cursor: pointer;
+  width: 80%;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.compose-btn .material-icons {
+  font-size: 20px;
+}
