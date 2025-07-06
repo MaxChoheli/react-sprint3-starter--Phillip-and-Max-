@@ -122,16 +122,25 @@ export function NoteIndex() {
 
     return (
         <section className="note-index">
-            <h1>MissKeep</h1>
-            <form onSubmit={onAddNote} className="note-form" ref={formRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div className="note-inputs" style={{ width: '100%', maxWidth: '400px' }}>
+            <section className="note-header">
+                <h1>MissKeep</h1>
+                <input
+                    type="text"
+                    className="note-search"
+                    placeholder="Search..."
+                    value={filterByTxt}
+                    onChange={(ev) => setFilterByTxt(ev.target.value)}
+                />
+            </section>
+
+            <form onSubmit={onAddNote} className="note-form" ref={formRef}>
+                <div className={`note-inputs ${isExpanded ? 'expanded' : ''}`}>
                     {isExpanded && (
                         <input
                             type="text"
                             placeholder="Title"
                             value={newTitle}
                             onChange={(ev) => setNewTitle(ev.target.value)}
-                            style={{ width: '100%', marginBottom: '8px' }}
                         />
                     )}
                     <textarea
@@ -139,17 +148,9 @@ export function NoteIndex() {
                         value={newTxt}
                         onFocus={() => setIsExpanded(true)}
                         onChange={handleAutoResize}
-                        style={{
-                            resize: 'none',
-                            minWidth: '200px',
-                            maxWidth: '400px',
-                            width: '100%',
-                            overflow: 'hidden',
-                            height: 'auto'
-                        }}
                     />
                     {isExpanded && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                        <div className="note-options">
                             <select value={newLabel} onChange={(ev) => setNewLabel(ev.target.value)}>
                                 <option value="">Label</option>
                                 <option value="critical">Critical</option>
@@ -173,12 +174,6 @@ export function NoteIndex() {
             </form>
 
             <section className="note-filter">
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    value={filterByTxt}
-                    onChange={(ev) => setFilterByTxt(ev.target.value)}
-                />
                 <select value={filterByType} onChange={(ev) => setFilterByType(ev.target.value)}>
                     <option value="">All Types</option>
                     <option value="NoteTxt">Text</option>
