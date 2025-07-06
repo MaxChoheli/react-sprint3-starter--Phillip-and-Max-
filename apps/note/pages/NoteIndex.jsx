@@ -3,7 +3,7 @@ import { NoteList } from '../cmps/NoteList.jsx'
 
 import '/assets/css/apps/note/NoteIndex.css'
 
-const { useState, useEffect } = React
+const { useState, useEffect, useRef } = React
 
 export function NoteIndex() {
     const [notes, setNotes] = useState([])
@@ -14,10 +14,29 @@ export function NoteIndex() {
     const [filterByTxt, setFilterByTxt] = useState('')
     const [filterByType, setFilterByType] = useState('')
     const [filterByLabel, setFilterByLabel] = useState('')
+    const [isExpanded, setIsExpanded] = useState(false)
+
+    const formRef = useRef()
 
     useEffect(() => {
         loadNotes()
     }, [])
+
+    useEffect(() => {
+        function handleClickOutside(ev) {
+            if (
+                isExpanded &&
+                formRef.current &&
+                !formRef.current.contains(ev.target) &&
+                !newTxt.trim() &&
+                !newTitle.trim()
+            ) {
+                setIsExpanded(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [isExpanded, newTxt, newTitle])
 
     function loadNotes() {
         noteService.query().then(setNotes)
@@ -45,6 +64,7 @@ export function NoteIndex() {
             setNewTitle('')
             setNewLabel('')
             setNewColor('#ffffff')
+            setIsExpanded(false)
             const txtArea = document.querySelector('.note-form textarea')
             if (txtArea) {
                 txtArea.style.height = 'auto'
@@ -103,43 +123,53 @@ export function NoteIndex() {
     return (
         <section className="note-index">
             <h1>MissKeep</h1>
-            <form onSubmit={onAddNote} className="note-form">
-                <input
-                    type="text"
-                    placeholder="Title"
-                    value={newTitle}
-                    onChange={(ev) => setNewTitle(ev.target.value)}
-                />
-                <textarea
-                    placeholder="Write a note..."
-                    value={newTxt}
-                    onChange={handleAutoResize}
-                    style={{
-                        resize: 'none',
-                        minWidth: '200px',
-                        maxWidth: '400px',
-                        overflow: 'hidden',
-                        height: 'auto',
-                        width: 'auto'
-                    }}
-                />
-                <select value={newLabel} onChange={(ev) => setNewLabel(ev.target.value)}>
-                    <option value="">Label</option>
-                    <option value="critical">Critical</option>
-                    <option value="family">Family</option>
-                    <option value="work">Work</option>
-                    <option value="friends">Friends</option>
-                    <option value="spam">Spam</option>
-                    <option value="memories">Memories</option>
-                    <option value="romantic">Romantic</option>
-                </select>
-                <input
-                    type="color"
-                    value={newColor}
-                    onChange={(ev) => setNewColor(ev.target.value)}
-                    title="Choose background color"
-                />
-                <button>Add</button>
+            <form onSubmit={onAddNote} className="note-form" ref={formRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div className="note-inputs" style={{ width: '100%', maxWidth: '400px' }}>
+                    {isExpanded && (
+                        <input
+                            type="text"
+                            placeholder="Title"
+                            value={newTitle}
+                            onChange={(ev) => setNewTitle(ev.target.value)}
+                            style={{ width: '100%', marginBottom: '8px' }}
+                        />
+                    )}
+                    <textarea
+                        placeholder="Take a note..."
+                        value={newTxt}
+                        onFocus={() => setIsExpanded(true)}
+                        onChange={handleAutoResize}
+                        style={{
+                            resize: 'none',
+                            minWidth: '200px',
+                            maxWidth: '400px',
+                            width: '100%',
+                            overflow: 'hidden',
+                            height: 'auto'
+                        }}
+                    />
+                    {isExpanded && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                            <select value={newLabel} onChange={(ev) => setNewLabel(ev.target.value)}>
+                                <option value="">Label</option>
+                                <option value="critical">Critical</option>
+                                <option value="family">Family</option>
+                                <option value="work">Work</option>
+                                <option value="friends">Friends</option>
+                                <option value="spam">Spam</option>
+                                <option value="memories">Memories</option>
+                                <option value="romantic">Romantic</option>
+                            </select>
+                            <input
+                                type="color"
+                                value={newColor}
+                                onChange={(ev) => setNewColor(ev.target.value)}
+                                title="Choose background color"
+                            />
+                            {newTxt.trim() && <button>Add</button>}
+                        </div>
+                    )}
+                </div>
             </form>
 
             <section className="note-filter">
