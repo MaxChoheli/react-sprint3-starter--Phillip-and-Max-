@@ -1,11 +1,22 @@
-const { Link, NavLink, useLocation } = ReactRouterDOM
+const { NavLink, useLocation } = ReactRouterDOM
 const { useState, useRef, useEffect } = React
 
 export function AppHeader({ filterByTxt, setFilterByTxt }) {
     const location = useLocation()
-    const isMissKeep = location.pathname.startsWith('/note')
+    const isMissKeep = location.pathname === '/note'
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const menuRef = useRef()
+
+    const pageMeta = {
+        '/': { name: 'Home', icon: 'home' },
+        '/about': { name: 'About', icon: 'info' },
+        '/mail': { name: 'MisterEmail', icon: 'mail' },
+        '/note': { name: 'MissKeep', icon: 'batch_prediction' },
+        '/books': { name: 'MissBooks', icon: 'menu_book' },
+    }
+
+    const { pathname } = location
+    const { name, icon } = pageMeta[pathname] || { name: '', icon: '' }
 
     useEffect(() => {
         function handleClickOutside(ev) {
@@ -21,8 +32,9 @@ export function AppHeader({ filterByTxt, setFilterByTxt }) {
         <header
             className="app-header"
             style={{
-                backgroundColor: 'lightblue',
-                padding: '10px',
+                backgroundColor: 'white',
+                padding: '14px 20px',
+                borderBottom: '1px solid #dadce0',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
@@ -30,22 +42,18 @@ export function AppHeader({ filterByTxt, setFilterByTxt }) {
             }}
         >
             <div className="left-section" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <Link to="/" style={{ color: 'goldenrod', textDecoration: 'none' }}>
-                    <h3 style={{ border: '1px solid goldenrod', padding: '4px 8px', borderRadius: '4px' }}>Home</h3>
-                </Link>
+                <span className="material-symbols-outlined" style={{ color: 'gray', fontSize: '30px' }}>{icon}</span>
+                <h3 style={{ margin: 0, color: 'gray' }}>{name}</h3>
 
                 {isMissKeep && (
-                    <React.Fragment>
-                        <h3 className="misskeep-logo">MissKeep</h3>
-                        <input
-                            type="text"
-                            className="misskeep-search"
-                            placeholder="Search notes..."
-                            value={filterByTxt}
-                            onChange={(ev) => setFilterByTxt(ev.target.value)}
-                            style={{ padding: '4px', borderRadius: '4px', border: '1px solid gray' }}
-                        />
-                    </React.Fragment>
+                    <input
+                        type="text"
+                        className="misskeep-search"
+                        placeholder="Search notes..."
+                        value={filterByTxt}
+                        onChange={(ev) => setFilterByTxt(ev.target.value)}
+                        style={{ padding: '4px', borderRadius: '4px', border: '1px solid gray' }}
+                    />
                 )}
             </div>
 
@@ -95,6 +103,6 @@ export function AppHeader({ filterByTxt, setFilterByTxt }) {
                     </nav>
                 )}
             </div>
-        </header >
+        </header>
     )
 }
