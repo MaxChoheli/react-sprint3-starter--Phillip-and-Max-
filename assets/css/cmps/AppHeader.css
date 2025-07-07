@@ -1,26 +1,19 @@
 .app-header {
     display: flex;
     justify-content: space-between;
-    padding: 1em;
-    background: var(--bg1);
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #f2f2f2;
 }
 
 nav a {
-    margin: .5em;
+    margin: 0.5em;
 }
 
 nav a.active {
     color: var(--color1);
     font-weight: bold;
     text-decoration: overline;
-}
-
-.app-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    background-color: #f2f2f2;
 }
 
 .left-section {
@@ -40,4 +33,26 @@ nav a.active {
     border-radius: 20px;
     border: 1px solid #ccc;
     outline: none;
+}
+
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24;
 }
