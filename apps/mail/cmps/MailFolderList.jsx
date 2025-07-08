@@ -2,8 +2,9 @@ export function MailFolderList({ currentStatus, onSetFolder }) {
   const folders = [
     { key: 'inbox', label: 'Inbox', icon: 'inbox' },
     { key: 'sent', label: 'Sent', icon: 'send' },
-    { key: 'trash', label: 'Trash', icon: 'delete' },
     { key: 'draft', label: 'Drafts', icon: 'draft' },
+    { key: 'trash', label: 'Trash', icon: 'delete' },
+    { key: 'starred', label: 'Starred', icon: 'star' },
   ]
 
   return (

@@ -1,6 +1,6 @@
 const { useNavigate } = ReactRouterDOM
 
-export function MailPreview({ mail, onToggleRead, onRemoveMail }) {
+export function MailPreview({ mail, onMailClick, onToggleRead, onRemoveMail, onToggleStarred }) {
   const navigate = useNavigate()
   const isUnread = !mail.isRead
 
@@ -12,13 +12,7 @@ export function MailPreview({ mail, onToggleRead, onRemoveMail }) {
     )
       return
 
-    if (isUnread) {
-      onToggleRead({ ...mail, isRead: true }).then(() => {
-        navigate(`/mail/${mail.id}`)
-      })
-    } else {
-      navigate(`/mail/${mail.id}`)
-    }
+    onMailClick(mail)
   }
 
   function onDelete(ev) {
@@ -31,11 +25,24 @@ export function MailPreview({ mail, onToggleRead, onRemoveMail }) {
     onToggleRead({ ...mail, isRead: !mail.isRead })
   }
 
+  function onStarClick(ev) {
+    ev.stopPropagation()
+    onToggleStarred(mail)
+  }
+
   return (
     <li className={`mail-item ${isUnread ? 'unread' : ''}`} onClick={onPreviewClick}>
       <div className="mail-left">
         <input type="checkbox" className="mail-checkbox" />
-        <button className="star-btn material-symbols-outlined">star_border</button>
+
+        <button
+          className="star-btn material-icons"
+          style={{ color: mail.isStarred ? 'gold' : 'grey' }}
+          onClick={onStarClick}
+        >
+          {mail.isStarred ? 'star' : 'star_outline'}
+        </button>
+
       </div>
 
       <div className="mail-center">

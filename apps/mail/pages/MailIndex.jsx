@@ -6,78 +6,107 @@ import { MailFolderList } from '../cmps/MailFolderList.jsx'
 import { MailCompose } from '../cmps/MailCompose.jsx'
 console.log('MailCompose =', MailCompose)
 import { mailService } from '../services/mail.service.js'
+const { useNavigate } = ReactRouterDOM
 
 export function MailIndex() {
-  const [filterBy, setFilterBy] = useState({ status: 'inbox', txt: '', isRead: null })
+
+  const navigate = useNavigate()
+
   const [mails, setMails] = useState([])
+  const [filterBy, setFilterBy] = useState({ status: 'inbox', txt: '', isRead: null })
   const [isComposing, setIsComposing] = useState(false)
+  const [draftToEdit, setDraftToEdit] = useState(null)
 
   useEffect(() => {
-    mailService.initDemoData().then(() => {
-      loadMails(filterBy)
-    })
-  }, [])
-
-  useEffect(() => {
-    loadMails(filterBy)
+    loadMails()
   }, [filterBy])
 
-  function loadMails(filter) {
-    mailService.query(filter).then(setMails)
+  function loadMails() {
+    mailService.query(filterBy).then(setMails)
   }
 
-  function onSetFilter(newFilter) {
-    setFilterBy(prev => ({ ...prev, ...newFilter }))
+  function onSetFolder(status) {
+    setFilterBy(prev => ({ ...prev, status }))
   }
 
-  function onSetFolder(folder) {
-    setFilterBy(prev => ({ ...prev, status: folder }))
+  function onToggleStarred(mail) {
+    mailService.toggleStarred(mail).then(loadMails)
   }
 
-  function onToggleRead(updatedMail) {
-    return mailService.save(updatedMail).then(() => {
-      setMails(prevMails =>
-        prevMails.map(mail => (mail.id === updatedMail.id ? updatedMail : mail))
-      )
-    })
+  function onToggleRead(mail) {
+    mail.isRead = !mail.isRead
+    mailService.save(mail).then(loadMails)
   }
 
   function onRemoveMail(mailId) {
-    mailService.remove(mailId).then(() => {
-      setMails(prevMails => prevMails.filter(mail => mail.id !== mailId))
+    mailService.remove(mailId).then(loadMails)
+  }
+
+  // When user clicks a mail item
+  function onMailClick(mail) {
+    if (mail.status === 'draft') {
+      setDraftToEdit(mail)
+      setIsComposing(true)
+    } else {
+      navigate(`/mail/${mail.id}`)
+      console.log('Open mail details for:', mail.id)
+    }
+  }
+
+  function onSend(mail) {
+    mailService.send(mail).then(() => {
+      setIsComposing(false)
+      setDraftToEdit(null)
+      loadMails()
     })
   }
 
-  // toggle mail compose form from visible to invisible
-  function onToggleCompose() {
-    setIsComposing(prev => !prev)
+  function onSaveDraft(mail) {
+    mail.status = 'draft'
+    mailService.saveDraft(mail).then(() => {
+      setIsComposing(false)
+      setDraftToEdit(null)
+      loadMails()
+    })
   }
 
-  // When mail is sent, close compose and reload mails
-  function onSend() {
+  function onCloseCompose() {
     setIsComposing(false)
-    loadMails(filterBy)
+    setDraftToEdit(null)
+  }
+
+  function onToggleCompose() {
+    setDraftToEdit(null)
+    setIsComposing(prev => !prev)
   }
 
   return (
     <section className="mail-index">
       <aside className="mail-sidebar">
         <button className="compose-btn" onClick={onToggleCompose}>
-          <span className="material-symbols-outlined">edit</span>
-          Compose
+          <span className="material-icons">edit</span> Compose
         </button>
         <MailFolderList currentStatus={filterBy.status} onSetFolder={onSetFolder} />
       </aside>
 
       <main className="mail-main">
-        <MailFilter onSetFilter={onSetFilter} />
+        <MailFilter filterBy={filterBy} onSetFilter={setFilterBy} />
 
-        {isComposing && <MailCompose onSend={onSend} onClose={onToggleCompose} />}
+        {isComposing && (
+          <MailCompose
+            mail={draftToEdit}
+            onSend={onSend}
+            onSaveDraft={onSaveDraft}
+            onClose={onCloseCompose}
+          />
+        )}
 
         <MailList
           mails={mails}
+          onToggleStarred={onToggleStarred}
           onToggleRead={onToggleRead}
           onRemoveMail={onRemoveMail}
+          onMailClick={onMailClick}  // pass this to detect draft clicks
         />
       </main>
     </section>

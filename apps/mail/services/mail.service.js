@@ -1,5 +1,5 @@
 import { storageService } from '../../../services/async-storage.service.js'
-import { utilService } from '../../../services/util.service.js' 
+import { utilService } from '../../../services/util.service.js'
 console.log('UTIL SERVICE:', utilService)
 
 export const mailService = {
@@ -11,6 +11,8 @@ export const mailService = {
   save,
   getLoggedinUser,
   initDemoData,
+  toggleStarred,
+  saveDraft,
 }
 
 const MAIL_KEY = 'mailDB'
@@ -26,6 +28,7 @@ const demoMails = [
     subject: 'Miss you!',
     body: 'Would love to catch up sometimes',
     isRead: false,
+    isStarred: false,     // <- add this
     sentAt: Date.now() - 100000,
     removedAt: null,
     from: 'momo@momo.com',
@@ -37,6 +40,7 @@ const demoMails = [
     subject: 'Project Update',
     body: 'Call me',
     isRead: true,
+    isStarred: false,     // <- add this
     sentAt: Date.now() - 50000,
     removedAt: null,
     from: 'user@appsus.com',
@@ -67,7 +71,9 @@ function query(filterBy = { status: '', txt: '', isRead: null }) {
     } else if (filterBy.status === 'trash') {
       mails = mails.filter(mail => mail.removedAt)
     } else if (filterBy.status === 'draft') {
-      mails = mails.filter(mail => mail.isDraft)
+      mails = mails.filter(mail => mail.status === 'draft')
+    } else if (filterBy.status === 'starred') {
+      mails = mails.filter(mail => mail.isStarred)
     } else {
       mails = mails.filter(mail => !mail.removedAt && !mail.isDraft)
     }
@@ -91,17 +97,19 @@ function createMailToSend(to, subject, body) {
     subject,
     body,
     isRead: false,
+    isStarred: false,      // <- add this
     sentAt: Date.now(),
     from: loggedinUser.email,
     to,
-    status: 'sent', // mark as sent by default
+    status: 'sent',
   }
 }
 
 function send(mail) {
   mail.status = 'sent'
   mail.sentAt = Date.now()
-  return storageService.post(MAIL_KEY, mail)
+  if (!mail.id) mail.id = utilService.makeId()
+  return save(mail)
 }
 
 function get(mailId) {
@@ -113,10 +121,22 @@ function remove(mailId) {
 }
 
 function save(mail) {
-  if (mail.id) return storageService.put(MAIL_KEY, mail)
-  else return storageService.post(MAIL_KEY, mail)
+  if (!mail.id) mail.id = utilService.makeId()
+  return storageService.put(MAIL_KEY, mail).catch(() => storageService.post(MAIL_KEY, mail))
 }
 
 function getLoggedinUser() {
   return loggedinUser
+}
+
+function toggleStarred(mail) {
+  mail.isStarred = !mail.isStarred
+  return save(mail)
+}
+
+function saveDraft(mail) {
+  mail.status = 'draft'
+  mail.sentAt = null
+  if (!mail.id) mail.id = utilService.makeId()
+  return save(mail)
 }
