@@ -13,6 +13,8 @@ export function NoteIndex({ filterByTxt, setFilterByTxt }) {
     const [filterByType, setFilterByType] = useState('')
     const [filterByLabel, setFilterByLabel] = useState('')
     const [isExpanded, setIsExpanded] = useState(false)
+    const [showLabels, setShowLabels] = useState(false)
+    const [showColors, setShowColors] = useState(false)
 
     const formRef = useRef()
 
@@ -138,22 +140,55 @@ export function NoteIndex({ filterByTxt, setFilterByTxt }) {
                     />
                     {isExpanded && (
                         <div className="note-options">
-                            <select value={newLabel} onChange={(ev) => setNewLabel(ev.target.value)}>
-                                <option value="">Label</option>
-                                <option value="critical">Critical</option>
-                                <option value="family">Family</option>
-                                <option value="work">Work</option>
-                                <option value="friends">Friends</option>
-                                <option value="spam">Spam</option>
-                                <option value="memories">Memories</option>
-                                <option value="romantic">Romantic</option>
-                            </select>
-                            <input
-                                type="color"
-                                value={newColor}
-                                onChange={(ev) => setNewColor(ev.target.value)}
-                                title="Choose background color"
-                            />
+                            <span
+                                className="material-symbols-outlined"
+                                onClick={() => setShowLabels(prev => !prev)}
+                                style={{ cursor: 'pointer', borderRadius: '50%', padding: '4px', backgroundColor: 'transparent' }}
+                            >
+                                label
+                            </span>
+                            {showLabels && (
+                                <select value={newLabel} onChange={(ev) => setNewLabel(ev.target.value)}>
+                                    <option value="">Label</option>
+                                    <option value="critical">Critical</option>
+                                    <option value="family">Family</option>
+                                    <option value="work">Work</option>
+                                    <option value="friends">Friends</option>
+                                    <option value="spam">Spam</option>
+                                    <option value="memories">Memories</option>
+                                    <option value="romantic">Romantic</option>
+                                </select>
+                            )}
+
+                            <span
+                                className="material-symbols-outlined"
+                                onClick={() => setShowColors(prev => !prev)}
+                                style={{ cursor: 'pointer', borderRadius: '50%', padding: '4px', backgroundColor: 'transparent' }}
+                            >
+                                palette
+                            </span>
+                            {showColors && (
+                                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
+                                    {['#faafa8', '#f39f76', '#fff8b8', '#e2f6d3', '#b4ddd3', '#d4e4ed', '#aeccdc', '#d3bfdb', '#f6e2dd', '#e9e3d4', '#efeff1'].map(color => (
+                                        <button
+                                            key={color}
+                                            type="button"
+                                            onClick={() => setNewColor(color)}
+                                            style={{
+                                                backgroundColor: color,
+                                                border: newColor === color ? '2px solid black' : '1px solid #ccc',
+                                                width: '22px',
+                                                height: '22px',
+                                                borderRadius: '50%',
+                                                cursor: 'pointer',
+                                                padding: 0
+                                            }}
+                                            title={color}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+
                             {newTxt.trim() && <button>Add</button>}
                         </div>
                     )}
