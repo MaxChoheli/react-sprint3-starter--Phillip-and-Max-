@@ -1,17 +1,15 @@
 import { noteService } from '../services/note.service.js'
 import { NoteList } from '../cmps/NoteList.jsx'
-
 import '/assets/css/apps/note/NoteIndex.css'
 
 const { useState, useEffect, useRef } = React
 
-export function NoteIndex() {
+export function NoteIndex({ filterByTxt, setFilterByTxt }) {
     const [notes, setNotes] = useState([])
     const [newTxt, setNewTxt] = useState('')
     const [newTitle, setNewTitle] = useState('')
     const [newLabel, setNewLabel] = useState('')
     const [newColor, setNewColor] = useState('#ffffff')
-    const [filterByTxt, setFilterByTxt] = useState('')
     const [filterByType, setFilterByType] = useState('')
     const [filterByLabel, setFilterByLabel] = useState('')
     const [isExpanded, setIsExpanded] = useState(false)
@@ -122,17 +120,6 @@ export function NoteIndex() {
 
     return (
         <section className="note-index">
-            <section className="note-header">
-                <h1>MissKeep</h1>
-                <input
-                    type="text"
-                    className="note-search"
-                    placeholder="Search..."
-                    value={filterByTxt}
-                    onChange={(ev) => setFilterByTxt(ev.target.value)}
-                />
-            </section>
-
             <form onSubmit={onAddNote} className="note-form" ref={formRef}>
                 <div className={`note-inputs ${isExpanded ? 'expanded' : ''}`}>
                     {isExpanded && (
