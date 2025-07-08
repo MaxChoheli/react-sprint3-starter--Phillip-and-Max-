@@ -3,7 +3,7 @@ export function MailFolderList({ currentStatus, onSetFolder }) {
     { key: 'inbox', label: 'Inbox', icon: 'inbox' },
     { key: 'sent', label: 'Sent', icon: 'send' },
     { key: 'trash', label: 'Trash', icon: 'delete' },
-    { key: 'draft', label: 'Drafts', icon: 'drafts' },
+    { key: 'draft', label: 'Drafts', icon: 'draft' },
   ]
 
   return (
@@ -14,7 +14,7 @@ export function MailFolderList({ currentStatus, onSetFolder }) {
           className={`folder-btn ${folder.key === currentStatus ? 'active' : ''}`}
           onClick={() => onSetFolder(folder.key)}
         >
-          <span className="material-icons">{folder.icon}</span>
+          <span className="material-symbols-outlined">{folder.icon}</span>
           <span>{folder.label}</span>
         </button>
       ))}

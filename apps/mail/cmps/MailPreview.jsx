@@ -35,7 +35,7 @@ export function MailPreview({ mail, onToggleRead, onRemoveMail }) {
     <li className={`mail-item ${isUnread ? 'unread' : ''}`} onClick={onPreviewClick}>
       <div className="mail-left">
         <input type="checkbox" className="mail-checkbox" />
-        <button className="star-btn material-icons">star_border</button>
+        <button className="star-btn material-symbols-outlined">star_border</button>
       </div>
 
       <div className="mail-center">
@@ -48,18 +48,18 @@ export function MailPreview({ mail, onToggleRead, onRemoveMail }) {
 
       <div className="mail-right">
         <div className="mail-actions">
-          <button className="action-btn material-icons">archive</button>
-          <button className="action-btn material-icons" onClick={onDelete} title="Delete mail">
+          <button className="action-btn material-symbols-outlined">archive</button>
+          <button className="action-btn material-symbols-outlined" onClick={onDelete} title="Delete mail">
             delete
           </button>
           <button
-            className="action-btn material-icons"
+            className="action-btn material-symbols-outlined"
             onClick={onToggleReadIcon}
             title={isUnread ? 'Mark as Read' : 'Mark as Unread'}
           >
             {isUnread ? 'mark_email_read' : 'mark_email_unread'}
           </button>
-          <button className="action-btn material-icons">snooze</button>
+          <button className="action-btn material-symbols-outlined">snooze</button>
         </div>
       </div>
     </li>

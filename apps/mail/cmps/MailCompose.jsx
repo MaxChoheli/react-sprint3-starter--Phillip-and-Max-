@@ -27,7 +27,7 @@ export function MailCompose({ onSend, onClose }) {
       <div className="compose-header">
         <h2>New Message</h2>
         <button className="close-btn" onClick={onClose}>
-          <span className="material-icons">close</span>
+          <span className="material-symbols-outlined">close</span>
         </button>
       </div>
 
@@ -55,7 +55,7 @@ export function MailCompose({ onSend, onClose }) {
         ></textarea>
 
         <button className="send-btn" type="submit">
-          <span className="material-icons">send</span>
+          <span className="material-symbols-outlined">send</span>
           Send
         </button>
       </form>

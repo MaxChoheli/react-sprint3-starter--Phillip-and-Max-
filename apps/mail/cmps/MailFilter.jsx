@@ -26,7 +26,7 @@ export function MailFilter({ onSetFilter }) {
   return (
     <section className="mail-filter">
       <div className="search-bar">
-        <span className="material-icons">search</span>
+        <span className="material-symbols-outlined">search</span>
         <input
           type="text"
           name="txt"

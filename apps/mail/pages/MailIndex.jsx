@@ -63,7 +63,7 @@ export function MailIndex() {
     <section className="mail-index">
       <aside className="mail-sidebar">
         <button className="compose-btn" onClick={onToggleCompose}>
-          <span className="material-icons">edit</span>
+          <span className="material-symbols-outlined">edit</span>
           Compose
         </button>
         <MailFolderList currentStatus={filterBy.status} onSetFolder={onSetFolder} />

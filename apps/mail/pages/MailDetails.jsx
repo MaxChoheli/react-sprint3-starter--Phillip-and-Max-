@@ -25,8 +25,8 @@ export function MailDetails() {
   return (
     <section className="mail-details">
       <header className="mail-details-header">
-        <button className="material-icons" onClick={onBack}>arrow_back</button>
-        <button className="material-icons" onClick={onDelete}>delete</button>
+        <button className="material-symbols-outlined" onClick={onBack}>arrow_back</button>
+        <button className="material-symbols-outlined" onClick={onDelete}>delete</button>
       </header>
 
       <div className="mail-details-content">
