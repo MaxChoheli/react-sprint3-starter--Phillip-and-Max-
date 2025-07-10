@@ -22,32 +22,55 @@ const loggedinUser = {
   fullname: 'Mahatma Appsus',
 }
 
-const demoMails = [
-  {
-    id: 'e101',
-    subject: 'Miss you!',
-    body: 'Would love to catch up sometimes',
-    isRead: false,
-    isStarred: false,     // <- add this
-    sentAt: Date.now() - 100000,
-    removedAt: null,
-    from: 'momo@momo.com',
-    to: 'user@appsus.com',
-    status: 'inbox',
-  },
-  {
-    id: 'e102',
-    subject: 'Project Update',
-    body: 'Call me',
-    isRead: true,
-    isStarred: false,     // <- add this
-    sentAt: Date.now() - 50000,
-    removedAt: null,
-    from: 'user@appsus.com',
-    to: '123a@domain.com',
-    status: 'sent',
-  },
+const demoMails = []
+const senders = [
+  'alice@example.com',
+  'bob@example.com',
+  'carol@example.com',
+  'dan@example.com',
+  'eve@example.com',
 ]
+const statuses = ['inbox', 'sent', 'draft', 'trash']
+
+function randomDateWithinLastMonth() {
+  const now = Date.now()
+  const monthAgo = now - 30 * 24 * 60 * 60 * 1000
+  return utilService.getRandomIntInclusive(monthAgo, now)
+}
+
+for (let i = 0; i < 15; i++) {
+  // Pick random folder status
+  let status = statuses[utilService.getRandomIntInclusive(0, statuses.length - 1)]
+
+  let mail = {
+    id: utilService.makeId(),
+    subject: utilService.makeLorem(5).trim(),
+    body: utilService.makeLorem(20).trim(),
+    isRead: Math.random() > 0.5,
+    isStarred: false,
+    sentAt: randomDateWithinLastMonth(),
+    removedAt: null,
+    from: '',
+    to: 'user@appsus.com',
+    status,
+  }
+
+  if (status === 'inbox') {
+    mail.from = senders[utilService.getRandomIntInclusive(0, senders.length - 1)]
+  } else if (status === 'sent') {
+    mail.from = 'user@appsus.com'
+  } else if (status === 'draft') {
+    mail.from = 'user@appsus.com'
+    mail.sentAt = null
+  } else if (status === 'trash') {
+    // For trash, can be from or to user, mark removedAt
+    const fromIsUser = Math.random() > 0.5
+    mail.from = fromIsUser ? 'user@appsus.com' : senders[utilService.getRandomIntInclusive(0, senders.length - 1)]
+    mail.removedAt = Date.now() - utilService.getRandomIntInclusive(0, 5) * 24 * 60 * 60 * 1000 // removed recently
+  }
+
+  demoMails.push(mail)
+}
 
 function initDemoData() {
   return storageService.query(MAIL_KEY).then(mails => {
@@ -66,19 +89,20 @@ function query(filterBy = { status: 'inbox', txt: '', isRead: null }) {
   return storageService.query(MAIL_KEY).then(mails => {
     let filteredMails = [...mails]
 
+    // Filter by folder/status
     if (filterBy.status === 'inbox') {
       filteredMails = filteredMails.filter(
         mail =>
           mail.to === loggedinUser.email &&
-          !mail.removedAt &&
-          mail.status !== 'draft'
+          mail.status === 'inbox' &&
+          !mail.removedAt
       )
     } else if (filterBy.status === 'sent') {
       filteredMails = filteredMails.filter(
         mail =>
           mail.from === loggedinUser.email &&
-          !mail.removedAt &&
-          mail.status === 'sent'
+          mail.status === 'sent' &&
+          !mail.removedAt
       )
     } else if (filterBy.status === 'trash') {
       filteredMails = filteredMails.filter(mail => mail.removedAt)
@@ -91,11 +115,13 @@ function query(filterBy = { status: 'inbox', txt: '', isRead: null }) {
         mail => mail.isStarred && !mail.removedAt
       )
     } else {
+      // Default fallback: any non-draft, non-removed mail
       filteredMails = filteredMails.filter(
         mail => !mail.removedAt && mail.status !== 'draft'
       )
     }
 
+    // Filter by text
     if (filterBy.txt) {
       const regex = new RegExp(filterBy.txt, 'i')
       filteredMails = filteredMails.filter(
@@ -107,6 +133,7 @@ function query(filterBy = { status: 'inbox', txt: '', isRead: null }) {
       )
     }
 
+    // Filter by read/unread
     if (filterBy.isRead !== null) {
       filteredMails = filteredMails.filter(
         mail => mail.isRead === filterBy.isRead
@@ -116,6 +143,7 @@ function query(filterBy = { status: 'inbox', txt: '', isRead: null }) {
     return filteredMails
   })
 }
+
 
 function createMailToSend(to, subject, body) {
   return {
