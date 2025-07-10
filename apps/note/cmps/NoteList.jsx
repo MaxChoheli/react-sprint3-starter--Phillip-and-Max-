@@ -1,8 +1,41 @@
+import { noteService } from '../services/note.service.js'
+
 export function NoteList({ notes, onDelete, onUpdate }) {
+    const [noteList, setNoteList] = React.useState(notes)
+    const [draggedIdx, setDraggedIdx] = React.useState(null)
+
+    React.useEffect(() => {
+        setNoteList(notes)
+    }, [notes])
+
+    function handleDragStart(idx) {
+        setDraggedIdx(idx)
+    }
+
+    function handleDragOver(ev) {
+        ev.preventDefault()
+    }
+
+    function handleDrop(idx) {
+        if (draggedIdx === null || draggedIdx === idx) return
+        const updated = [...noteList]
+        const [draggedNote] = updated.splice(draggedIdx, 1)
+        updated.splice(idx, 0, draggedNote)
+        setDraggedIdx(null)
+        setNoteList(updated)
+        noteService.saveMany(updated)
+    }
+
     return (
         <ul className="note-list">
-            {notes.map(note => (
-                <li key={note.id}>
+            {noteList.map((note, idx) => (
+                <li
+                    key={note.id}
+                    draggable
+                    onDragStart={() => handleDragStart(idx)}
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop(idx)}
+                >
                     <NoteItem note={note} onDelete={onDelete} onUpdate={onUpdate} />
                 </li>
             ))}
@@ -16,14 +49,8 @@ function NoteItem({ note, onDelete, onUpdate }) {
     const [title, setTitle] = React.useState(note.info.title || '')
     const [label, setLabel] = React.useState(note.info.label || '')
     const [bgColor, setBgColor] = React.useState(note.style && note.style.backgroundColor ? note.style.backgroundColor : '#ffffff')
-    const [position, setPosition] = React.useState({
-        x: note.style && note.style.left ? note.style.left : 0,
-        y: note.style && note.style.top ? note.style.top : 0
-    })
-    const [isDragging, setIsDragging] = React.useState(false)
     const [showColorPicker, setShowColorPicker] = React.useState(false)
     const [showLabelPicker, setShowLabelPicker] = React.useState(false)
-    const STATIC_OFFSET = { x: -170, y: -320 }
 
     const colorOptions = [
         '#faafa8', '#f39f76', '#fff8b8', '#e2f6d3', '#b4ddd3',
@@ -34,9 +61,7 @@ function NoteItem({ note, onDelete, onUpdate }) {
         setIsEditing(false)
         const updatedStyle = {
             backgroundColor: bgColor,
-            color: '#000000',
-            left: position.x,
-            top: position.y
+            color: '#000000'
         }
         const updatedNote = {
             ...note,
@@ -45,58 +70,6 @@ function NoteItem({ note, onDelete, onUpdate }) {
         }
         onUpdate(note.id, txt, bgColor, updatedStyle, title, label)
     }
-
-    function handleMouseDown(ev) {
-        if (
-            ev.target.tagName === 'TEXTAREA' ||
-            ev.target.tagName === 'INPUT' ||
-            ev.target.tagName === 'BUTTON' ||
-            ev.target.tagName === 'SELECT' ||
-            ev.target.closest('button')
-        ) return
-        setIsDragging(true)
-    }
-
-    function handleMouseMove(ev) {
-        if (!isDragging) return
-        const x = ev.clientX + STATIC_OFFSET.x
-        const y = ev.clientY + STATIC_OFFSET.y
-        setPosition({ x, y })
-    }
-
-    function handleMouseUp() {
-        setIsDragging(false)
-    }
-
-    React.useEffect(() => {
-        if (isDragging) {
-            window.addEventListener('mousemove', handleMouseMove)
-            window.addEventListener('mouseup', handleMouseUp)
-        } else {
-            window.removeEventListener('mousemove', handleMouseMove)
-            window.removeEventListener('mouseup', handleMouseUp)
-        }
-
-        return () => {
-            window.removeEventListener('mousemove', handleMouseMove)
-            window.removeEventListener('mouseup', handleMouseUp)
-        }
-    }, [isDragging])
-
-    React.useEffect(() => {
-        const updatedStyle = {
-            backgroundColor: bgColor,
-            color: '#000000',
-            left: position.x,
-            top: position.y
-        }
-        const updatedNote = {
-            ...note,
-            info: { txt, title, label },
-            style: updatedStyle
-        }
-        onUpdate(note.id, txt, bgColor, updatedStyle, title, label)
-    }, [position])
 
     function handleEditTxtResize(ev) {
         const el = ev.target
@@ -121,14 +94,9 @@ function NoteItem({ note, onDelete, onUpdate }) {
     return (
         <div
             className="note-item"
-            onMouseDown={handleMouseDown}
             style={{
-                position: 'absolute',
-                left: position.x + 'px',
-                top: position.y + 'px',
                 backgroundColor: bgColor,
                 color: '#000000',
-                cursor: isDragging ? 'grabbing' : 'grab',
                 maxWidth: '400px'
             }}
         >
