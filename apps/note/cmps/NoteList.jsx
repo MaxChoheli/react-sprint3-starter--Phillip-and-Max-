@@ -141,7 +141,8 @@ function NoteItem({ note, onDelete, onUpdate }) {
                     backgroundColor: bgColor,
                     color: '#000000',
                     maxWidth: '400px',
-                    position: 'relative'
+                    position: 'relative',
+                    paddingBottom: '144px'
                 }}
                 onMouseEnter={() => noteRef.current.querySelector('.note-actions').style.display = 'flex'}
                 onMouseLeave={() => noteRef.current.querySelector('.note-actions').style.display = 'none'}
@@ -150,7 +151,7 @@ function NoteItem({ note, onDelete, onUpdate }) {
                 <p>{note.info.txt}</p>
                 {note.info.label && <p className="note-label">#{note.info.label}</p>}
 
-                <div className="note-actions note-action" style={{ position: 'absolute', bottom: '6px', left: '6px', display: 'none' }}>
+                <div className="note-actions note-action" style={{ position: 'absolute', bottom: '36px', left: '6px', display: 'none' }}>
                     <button className="note-action" onClick={(ev) => { ev.stopPropagation(); onDelete(note.id) }} style={iconBtnStyle}>
                         <span className="material-symbols-outlined">delete</span>
                     </button>
@@ -163,7 +164,7 @@ function NoteItem({ note, onDelete, onUpdate }) {
                 </div>
 
                 {!isModalOpen && (showColorPicker || showLabelPicker) && (
-                    <div style={{ position: 'absolute', bottom: '40px', left: '6px' }}>
+                    <div style={{ position: 'absolute', bottom: '100px', left: '6px' }}>
                         {showLabelPicker && (
                             <select
                                 className="note-action"
@@ -192,7 +193,7 @@ function NoteItem({ note, onDelete, onUpdate }) {
                                             border: bgColor === color ? '2px solid black' : '1px solid #ccc',
                                             width: '22px',
                                             height: '22px',
-                                            borderRadius: '4px',
+                                            borderRadius: '50%',
                                             cursor: 'pointer',
                                             padding: 0
                                         }}
@@ -253,20 +254,25 @@ function NoteItem({ note, onDelete, onUpdate }) {
                             ✕
                         </button>
 
-                        <input
-                            type="text"
+                        <textarea
                             value={title}
                             placeholder="Title"
                             onChange={(e) => setTitle(e.target.value)}
+                            rows={1}
                             style={{
                                 fontWeight: 'bold',
                                 textTransform: 'uppercase',
                                 width: '100%',
+                                maxWidth: '400px',
                                 fontSize: '1.1rem',
                                 marginBottom: '0.5rem',
                                 border: 'none',
                                 outline: 'none',
-                                background: 'transparent'
+                                background: 'transparent',
+                                resize: 'none',
+                                overflowWrap: 'break-word',
+                                wordBreak: 'break-word',
+                                overflow: 'hidden'
                             }}
                         />
 

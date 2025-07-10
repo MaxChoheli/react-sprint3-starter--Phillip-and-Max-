@@ -4,14 +4,12 @@ import '/assets/css/apps/note/NoteIndex.css'
 
 const { useState, useEffect, useRef } = React
 
-export function NoteIndex({ filterByTxt, setFilterByTxt }) {
+export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
     const [notes, setNotes] = useState([])
     const [newTxt, setNewTxt] = useState('')
     const [newTitle, setNewTitle] = useState('')
     const [newLabel, setNewLabel] = useState('')
     const [newColor, setNewColor] = useState('#ffffff')
-    const [filterByType, setFilterByType] = useState('')
-    const [filterByLabel, setFilterByLabel] = useState('')
     const [isExpanded, setIsExpanded] = useState(false)
     const [showLabels, setShowLabels] = useState(false)
     const [showColors, setShowColors] = useState(false)
@@ -107,17 +105,17 @@ export function NoteIndex({ filterByTxt, setFilterByTxt }) {
         el.style.width = el.scrollWidth < 400 ? el.scrollWidth + 'px' : '400px'
     }
 
-    const filteredNotes = [...notes].filter(note => {
+    const filteredNotes = notes.filter(note => {
         const title = (note.info.title || '').toLowerCase()
         const txt = (note.info.txt || '').toLowerCase()
         const label = note.info.label || ''
         const type = note.type || ''
         return (
-            title.includes(filterByTxt.toLowerCase()) ||
-            txt.includes(filterByTxt.toLowerCase())
-        ) &&
+            (title.includes(filterByTxt.toLowerCase()) ||
+                txt.includes(filterByTxt.toLowerCase())) &&
             (filterByType === '' || type === filterByType) &&
             (filterByLabel === '' || label === filterByLabel)
+        )
     })
 
     return (
@@ -194,25 +192,6 @@ export function NoteIndex({ filterByTxt, setFilterByTxt }) {
                     )}
                 </div>
             </form>
-
-            <section className="note-filter">
-                <select value={filterByType} onChange={(ev) => setFilterByType(ev.target.value)}>
-                    <option value="">All Types</option>
-                    <option value="NoteTxt">Text</option>
-                    <option value="NoteImg">Image</option>
-                    <option value="NoteVideo">Video</option>
-                </select>
-                <select value={filterByLabel} onChange={(ev) => setFilterByLabel(ev.target.value)}>
-                    <option value="">All Labels</option>
-                    <option value="critical">Critical</option>
-                    <option value="family">Family</option>
-                    <option value="work">Work</option>
-                    <option value="friends">Friends</option>
-                    <option value="spam">Spam</option>
-                    <option value="memories">Memories</option>
-                    <option value="romantic">Romantic</option>
-                </select>
-            </section>
 
             <NoteList
                 notes={filteredNotes}

@@ -14,17 +14,33 @@ const { useState } = React
 
 export function RootCmp() {
     const [filterByTxt, setFilterByTxt] = useState('')
+    const [filterByType, setFilterByType] = useState('')
+    const [filterByLabel, setFilterByLabel] = useState('')
 
     return (
         <Router>
             <section className="root-cmp">
-                <AppHeader filterByTxt={filterByTxt} setFilterByTxt={setFilterByTxt} />
+                <AppHeader
+                    filterByTxt={filterByTxt}
+                    setFilterByTxt={setFilterByTxt}
+                    filterByType={filterByType}
+                    setFilterByType={setFilterByType}
+                    filterByLabel={filterByLabel}
+                    setFilterByLabel={setFilterByLabel}
+                />
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/mail" element={<MailIndex />} />
                     <Route path="/mail/:mailId" element={<MailDetails />} />
-                    <Route path="/note" element={<NoteIndex filterByTxt={filterByTxt} setFilterByTxt={setFilterByTxt} />} />
+                    <Route path="/note" element={
+                        <NoteIndex
+                            filterByTxt={filterByTxt}
+                            setFilterByTxt={setFilterByTxt}
+                            filterByType={filterByType}
+                            filterByLabel={filterByLabel}
+                        />
+                    } />
                     <Route path="/books" element={<BooksWrapper />} />
                 </Routes>
                 <UserMsg />

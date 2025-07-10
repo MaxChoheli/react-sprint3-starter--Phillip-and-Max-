@@ -1,11 +1,13 @@
 const { NavLink, useLocation } = ReactRouterDOM
 const { useState, useRef, useEffect } = React
 
-export function AppHeader({ filterByTxt, setFilterByTxt }) {
+export function AppHeader({ filterByTxt, setFilterByTxt, filterByType, setFilterByType, filterByLabel, setFilterByLabel }) {
     const location = useLocation()
     const isMissKeep = location.pathname === '/note'
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [showFilters, setShowFilters] = useState(false)
     const menuRef = useRef()
+    const wrapperRef = useRef()
 
     const pageMeta = {
         '/': { name: 'Home', icon: 'home' },
@@ -28,6 +30,12 @@ export function AppHeader({ filterByTxt, setFilterByTxt }) {
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
 
+    function handleWrapperBlur(ev) {
+        if (!wrapperRef.current.contains(ev.relatedTarget)) {
+            setShowFilters(false)
+        }
+    }
+
     return (
         <header
             className="app-header"
@@ -46,14 +54,44 @@ export function AppHeader({ filterByTxt, setFilterByTxt }) {
                 <h3 style={{ margin: 0, color: 'gray' }}>{name}</h3>
 
                 {isMissKeep && (
-                    <input
-                        type="text"
-                        className="misskeep-search"
-                        placeholder="Search notes..."
-                        value={filterByTxt}
-                        onChange={(ev) => setFilterByTxt(ev.target.value)}
-                        style={{ padding: '4px', borderRadius: '4px', border: '1px solid gray' }}
-                    />
+                    <div
+                        className="misskeep-search-wrapper"
+                        ref={wrapperRef}
+                        onFocus={() => setShowFilters(true)}
+                        onBlur={handleWrapperBlur}
+                        tabIndex="0"
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                    >
+                        <input
+                            type="text"
+                            className="misskeep-search"
+                            placeholder="Search notes..."
+                            value={filterByTxt}
+                            onChange={(ev) => setFilterByTxt(ev.target.value)}
+                            style={{ padding: '4px', borderRadius: '4px', border: '1px solid gray' }}
+                        />
+
+                        {showFilters && (
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <select value={filterByType} onChange={(ev) => setFilterByType(ev.target.value)}>
+                                    <option value="">All Types</option>
+                                    <option value="NoteTxt">Text</option>
+                                    <option value="NoteImg">Image</option>
+                                    <option value="NoteVideo">Video</option>
+                                </select>
+                                <select value={filterByLabel} onChange={(ev) => setFilterByLabel(ev.target.value)}>
+                                    <option value="">All Labels</option>
+                                    <option value="critical">Critical</option>
+                                    <option value="family">Family</option>
+                                    <option value="work">Work</option>
+                                    <option value="friends">Friends</option>
+                                    <option value="spam">Spam</option>
+                                    <option value="memories">Memories</option>
+                                    <option value="romantic">Romantic</option>
+                                </select>
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
 
