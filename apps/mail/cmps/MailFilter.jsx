@@ -1,10 +1,4 @@
-const { useState } = React
-
-export function MailFilter({ onSetFilter }) {
-  const [filterBy, setFilterBy] = useState({
-    txt: '',
-    isRead: null,
-  })
+export function MailFilter({ filterBy, onSetFilter }) {
 
   function handleChange(ev) {
     const { name, value } = ev.target
@@ -19,7 +13,6 @@ export function MailFilter({ onSetFilter }) {
     }
 
     const newFilterBy = { ...filterBy, [name]: val }
-    setFilterBy(newFilterBy)
     onSetFilter(newFilterBy)
   }
 
@@ -53,4 +46,3 @@ export function MailFilter({ onSetFilter }) {
     </section>
   )
 }
-

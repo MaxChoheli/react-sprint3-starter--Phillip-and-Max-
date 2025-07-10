@@ -2,12 +2,11 @@ const { useState, useEffect } = React
 import { utilService } from '../../../services/util.service.js'
 
 export function MailCompose({ mail, onClose, onSend, onSaveDraft }) {
-  // Initialize empty state to avoid errors
+ 
   const [to, setTo] = useState('')
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
 
-  // When mail prop changes (new mail or draft), populate form fields
   useEffect(() => {
     if (mail) {
       setTo(mail.to || '')

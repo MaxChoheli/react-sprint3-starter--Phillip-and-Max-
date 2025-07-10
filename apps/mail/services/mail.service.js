@@ -62,32 +62,58 @@ function _save(entityType, entities) {
   localStorage.setItem(entityType, JSON.stringify(entities))
 }
 
-function query(filterBy = { status: '', txt: '', isRead: null }) {
+function query(filterBy = { status: 'inbox', txt: '', isRead: null }) {
   return storageService.query(MAIL_KEY).then(mails => {
+    let filteredMails = [...mails]
+
     if (filterBy.status === 'inbox') {
-      mails = mails.filter(mail => mail.to === loggedinUser.email && !mail.removedAt)
+      filteredMails = filteredMails.filter(
+        mail =>
+          mail.to === loggedinUser.email &&
+          !mail.removedAt &&
+          mail.status !== 'draft'
+      )
     } else if (filterBy.status === 'sent') {
-      mails = mails.filter(mail => mail.from === loggedinUser.email && !mail.removedAt)
+      filteredMails = filteredMails.filter(
+        mail =>
+          mail.from === loggedinUser.email &&
+          !mail.removedAt &&
+          mail.status === 'sent'
+      )
     } else if (filterBy.status === 'trash') {
-      mails = mails.filter(mail => mail.removedAt)
+      filteredMails = filteredMails.filter(mail => mail.removedAt)
     } else if (filterBy.status === 'draft') {
-      mails = mails.filter(mail => mail.status === 'draft')
+      filteredMails = filteredMails.filter(
+        mail => mail.status === 'draft' && !mail.removedAt
+      )
     } else if (filterBy.status === 'starred') {
-      mails = mails.filter(mail => mail.isStarred)
+      filteredMails = filteredMails.filter(
+        mail => mail.isStarred && !mail.removedAt
+      )
     } else {
-      mails = mails.filter(mail => !mail.removedAt && !mail.isDraft)
+      filteredMails = filteredMails.filter(
+        mail => !mail.removedAt && mail.status !== 'draft'
+      )
     }
 
     if (filterBy.txt) {
       const regex = new RegExp(filterBy.txt, 'i')
-      mails = mails.filter(mail => regex.test(mail.subject) || regex.test(mail.body) || regex.test(mail.to))
+      filteredMails = filteredMails.filter(
+        mail =>
+          regex.test(mail.subject) ||
+          regex.test(mail.body) ||
+          regex.test(mail.to) ||
+          regex.test(mail.from)
+      )
     }
 
     if (filterBy.isRead !== null) {
-      mails = mails.filter(mail => mail.isRead === filterBy.isRead)
+      filteredMails = filteredMails.filter(
+        mail => mail.isRead === filterBy.isRead
+      )
     }
 
-    return mails
+    return filteredMails
   })
 }
 
@@ -117,7 +143,17 @@ function get(mailId) {
 }
 
 function remove(mailId) {
-  return storageService.remove(MAIL_KEY, mailId)
+  return get(mailId).then(mail => {
+    if (!mail) return Promise.reject('Mail not found')
+    if (mail.removedAt) {
+      // Already in trash = permanently delete
+      return storageService.remove(MAIL_KEY, mailId)
+    } else {
+      // Move to trash
+      mail.removedAt = Date.now()
+      return save(mail)
+    }
+  })
 }
 
 function save(mail) {

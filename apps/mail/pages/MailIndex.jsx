@@ -4,12 +4,11 @@ import { MailFilter } from '../cmps/MailFilter.jsx'
 import { MailList } from '../cmps/MailList.jsx'
 import { MailFolderList } from '../cmps/MailFolderList.jsx'
 import { MailCompose } from '../cmps/MailCompose.jsx'
-console.log('MailCompose =', MailCompose)
 import { mailService } from '../services/mail.service.js'
+
 const { useNavigate } = ReactRouterDOM
 
 export function MailIndex() {
-
   const navigate = useNavigate()
 
   const [mails, setMails] = useState([])
@@ -18,38 +17,41 @@ export function MailIndex() {
   const [draftToEdit, setDraftToEdit] = useState(null)
 
   useEffect(() => {
-    loadMails()
-  }, [filterBy])
 
-  function loadMails() {
-    mailService.query(filterBy).then(setMails)
-  }
+    mailService.initDemoData().then(() => {
+      mailService.query(filterBy).then(setMails)
+    })
+  }, [filterBy])
 
   function onSetFolder(status) {
     setFilterBy(prev => ({ ...prev, status }))
   }
 
   function onToggleStarred(mail) {
-    mailService.toggleStarred(mail).then(loadMails)
+    mailService.toggleStarred(mail).then(() => {
+      mailService.query(filterBy).then(setMails)
+    })
   }
 
   function onToggleRead(mail) {
     mail.isRead = !mail.isRead
-    mailService.save(mail).then(loadMails)
+    mailService.save(mail).then(() => {
+      mailService.query(filterBy).then(setMails)
+    })
   }
 
   function onRemoveMail(mailId) {
-    mailService.remove(mailId).then(loadMails)
+    mailService.remove(mailId).then(() => {
+      mailService.query(filterBy).then(setMails)
+    })
   }
 
-  // When user clicks a mail item
   function onMailClick(mail) {
     if (mail.status === 'draft') {
       setDraftToEdit(mail)
       setIsComposing(true)
     } else {
       navigate(`/mail/${mail.id}`)
-      console.log('Open mail details for:', mail.id)
     }
   }
 
@@ -57,7 +59,7 @@ export function MailIndex() {
     mailService.send(mail).then(() => {
       setIsComposing(false)
       setDraftToEdit(null)
-      loadMails()
+      mailService.query(filterBy).then(setMails)
     })
   }
 
@@ -66,7 +68,7 @@ export function MailIndex() {
     mailService.saveDraft(mail).then(() => {
       setIsComposing(false)
       setDraftToEdit(null)
-      loadMails()
+      mailService.query(filterBy).then(setMails)
     })
   }
 
@@ -106,7 +108,7 @@ export function MailIndex() {
           onToggleStarred={onToggleStarred}
           onToggleRead={onToggleRead}
           onRemoveMail={onRemoveMail}
-          onMailClick={onMailClick}  // pass this to detect draft clicks
+          onMailClick={onMailClick}
         />
       </main>
     </section>
