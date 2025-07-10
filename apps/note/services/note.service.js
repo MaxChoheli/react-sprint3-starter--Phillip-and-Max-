@@ -7,6 +7,7 @@ export const noteService = {
     query,
     save,
     remove,
+    saveMany
 }
 
 function query() {
@@ -55,3 +56,10 @@ function handleUpdate(noteId, newTxt, newBgColor, newTxtColor, newPos) {
         noteService.save(note).then(loadNotes)
     })
 }
+
+function saveMany(notes) {
+    localStorage.setItem(NOTE_KEY, JSON.stringify(notes))
+    return Promise.resolve(notes)
+}
+
+

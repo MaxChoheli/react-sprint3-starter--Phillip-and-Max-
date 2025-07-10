@@ -107,7 +107,7 @@ export function NoteIndex({ filterByTxt, setFilterByTxt }) {
         el.style.width = el.scrollWidth < 400 ? el.scrollWidth + 'px' : '400px'
     }
 
-    const filteredNotes = notes.filter(note => {
+    const filteredNotes = [...notes].filter(note => {
         const title = (note.info.title || '').toLowerCase()
         const txt = (note.info.txt || '').toLowerCase()
         const label = note.info.label || ''

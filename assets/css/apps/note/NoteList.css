@@ -15,7 +15,11 @@
     transform: rotate(-2deg);
     font-family: 'Patrick Hand', cursive;
     cursor: grab;
-    position: absolute;
+}
+
+.note-item.dragging {
+    opacity: 0.5;
+    transform: scale(1.05) rotate(-2deg);
 }
 
 .note-preview {
