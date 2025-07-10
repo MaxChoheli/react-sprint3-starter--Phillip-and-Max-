@@ -30,6 +30,25 @@ export function MailPreview({ mail, onMailClick, onToggleRead, onRemoveMail, onT
     onToggleStarred(mail)
   }
 
+  function formatSentAt(timestamp) {
+  if (!timestamp) return ''
+
+  const sentDate = new Date(timestamp)
+  const now = new Date()
+
+  // If sent today, show time
+  if (
+    sentDate.getDate() === now.getDate() &&
+    sentDate.getMonth() === now.getMonth() &&
+    sentDate.getFullYear() === now.getFullYear()
+  ) {
+    return sentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+
+  // or show date
+  return sentDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+}
+
   return (
     <li className={`mail-item ${isUnread ? 'unread' : ''}`} onClick={onPreviewClick}>
       <div className="mail-left">
@@ -54,6 +73,7 @@ export function MailPreview({ mail, onMailClick, onToggleRead, onRemoveMail, onT
       </div>
 
       <div className="mail-right">
+        <span className="mail-sent-at">{formatSentAt(mail.sentAt)}</span>
         <div className="mail-actions">
           <button className="action-btn material-symbols-outlined">archive</button>
           <button className="action-btn material-symbols-outlined" onClick={onDelete} title="Delete mail">

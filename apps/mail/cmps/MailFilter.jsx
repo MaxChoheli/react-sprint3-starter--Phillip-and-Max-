@@ -1,19 +1,35 @@
-export function MailFilter({ filterBy, onSetFilter }) {
+const { useState, useEffect } = React
 
-  function handleChange(ev) {
+export function MailFilter({ filterBy, onSetFilter, sortBy, onSetSort }) {
+  const [localFilter, setLocalFilter] = useState(filterBy)
+  const [localSort, setLocalSort] = useState(sortBy)
+
+  useEffect(() => {
+    setLocalFilter(filterBy)
+  }, [filterBy])
+
+  useEffect(() => {
+    setLocalSort(sortBy)
+  }, [sortBy])
+
+  function handleFilterChange(ev) {
     const { name, value } = ev.target
-    let val
-
+    let val = value
     if (name === 'isRead') {
       if (value === 'all') val = null
       else if (value === 'read') val = true
       else val = false
-    } else {
-      val = value
     }
+    const newFilter = { ...localFilter, [name]: val }
+    setLocalFilter(newFilter)
+    onSetFilter(newFilter)
+  }
 
-    const newFilterBy = { ...filterBy, [name]: val }
-    onSetFilter(newFilterBy)
+  function handleSortChange(ev) {
+    const [field, direction] = ev.target.value.split('-')
+    const newSort = { field, direction }
+    setLocalSort(newSort)
+    onSetSort(newSort)
   }
 
   return (
@@ -24,23 +40,37 @@ export function MailFilter({ filterBy, onSetFilter }) {
           type="text"
           name="txt"
           placeholder="Search mail"
-          value={filterBy.txt}
-          onChange={handleChange}
+          value={localFilter.txt}
+          onChange={handleFilterChange}
         />
+        <label style={{ marginLeft: '2px', marginRight: '2px', }}>Filter:</label>
+          
         <select
           name="isRead"
           value={
-            filterBy.isRead === null
+            localFilter.isRead === null
               ? 'all'
-              : filterBy.isRead === true
-                ? 'read'
-                : 'unread'
+              : localFilter.isRead === true
+              ? 'read'
+              : 'unread'
           }
-          onChange={handleChange}
+          onChange={handleFilterChange}
         >
           <option value="all">All</option>
           <option value="read">Read</option>
           <option value="unread">Unread</option>
+        </select>
+
+        {/* Sorting dropdown here */}
+        <label style={{ marginLeft: '2px', marginRight: '2px', }}>Sort by:</label>
+        <select
+          value={`${localSort.field}-${localSort.direction}`}
+          onChange={handleSortChange}
+        > 
+          <option value="date-desc">Date ↓</option>
+          <option value="date-asc">Date ↑</option>
+          <option value="title-asc">Title A-Z</option>
+          <option value="title-desc">Title Z-A</option>
         </select>
       </div>
     </section>

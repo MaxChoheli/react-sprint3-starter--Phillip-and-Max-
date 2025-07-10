@@ -1,11 +1,9 @@
 const { useState, useEffect } = React
-
 import { MailFilter } from '../cmps/MailFilter.jsx'
 import { MailList } from '../cmps/MailList.jsx'
 import { MailFolderList } from '../cmps/MailFolderList.jsx'
 import { MailCompose } from '../cmps/MailCompose.jsx'
 import { mailService } from '../services/mail.service.js'
-
 const { useNavigate } = ReactRouterDOM
 
 export function MailIndex() {
@@ -15,35 +13,42 @@ export function MailIndex() {
   const [filterBy, setFilterBy] = useState({ status: 'inbox', txt: '', isRead: null })
   const [isComposing, setIsComposing] = useState(false)
   const [draftToEdit, setDraftToEdit] = useState(null)
+  const [sortBy, setSortBy] = useState({ field: 'date', direction: 'desc' })
 
   useEffect(() => {
+    mailService.initDemoData().then(loadAndSortMails)
+  }, [filterBy, sortBy])
 
-    mailService.initDemoData().then(() => {
-      mailService.query(filterBy).then(setMails)
+  function loadAndSortMails() {
+    mailService.query(filterBy).then(mails => {
+      const sortedMails = [...mails].sort((a, b) => {
+        if (sortBy.field === 'date') {
+          return sortBy.direction === 'asc' ? a.sentAt - b.sentAt : b.sentAt - a.sentAt
+        } else if (sortBy.field === 'title') {
+          return sortBy.direction === 'asc'
+            ? a.subject.localeCompare(b.subject)
+            : b.subject.localeCompare(a.subject)
+        }
+      })
+      setMails(sortedMails)
     })
-  }, [filterBy])
+  }
 
   function onSetFolder(status) {
     setFilterBy(prev => ({ ...prev, status }))
   }
 
   function onToggleStarred(mail) {
-    mailService.toggleStarred(mail).then(() => {
-      mailService.query(filterBy).then(setMails)
-    })
+    mailService.toggleStarred(mail).then(loadAndSortMails)
   }
 
   function onToggleRead(mail) {
     mail.isRead = !mail.isRead
-    mailService.save(mail).then(() => {
-      mailService.query(filterBy).then(setMails)
-    })
+    mailService.save(mail).then(loadAndSortMails)
   }
 
   function onRemoveMail(mailId) {
-    mailService.remove(mailId).then(() => {
-      mailService.query(filterBy).then(setMails)
-    })
+    mailService.remove(mailId).then(loadAndSortMails)
   }
 
   function onMailClick(mail) {
@@ -59,7 +64,7 @@ export function MailIndex() {
     mailService.send(mail).then(() => {
       setIsComposing(false)
       setDraftToEdit(null)
-      mailService.query(filterBy).then(setMails)
+      loadAndSortMails()
     })
   }
 
@@ -68,7 +73,7 @@ export function MailIndex() {
     mailService.saveDraft(mail).then(() => {
       setIsComposing(false)
       setDraftToEdit(null)
-      mailService.query(filterBy).then(setMails)
+      loadAndSortMails()
     })
   }
 
@@ -92,7 +97,12 @@ export function MailIndex() {
       </aside>
 
       <main className="mail-main">
-        <MailFilter filterBy={filterBy} onSetFilter={setFilterBy} />
+        <MailFilter
+          filterBy={filterBy}
+          onSetFilter={setFilterBy}
+          sortBy={sortBy}
+          onSetSort={setSortBy}
+        />
 
         {isComposing && (
           <MailCompose

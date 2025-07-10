@@ -103,20 +103,46 @@
 }
 
 .mail-right {
-  display: flex;
-  justify-content: flex-end;
+  position: relative;
   margin-left: auto;
+  width: 100px; /* fixed width to reserve space at the right */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.mail-sent-at {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #555;
+  white-space: nowrap;
+  user-select: none;
+  transition: opacity 0.25s ease;
+  position: absolute;
+  margin-right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
 }
 
 .mail-actions {
   display: flex;
   gap: 8px;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.25s ease;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
 }
 
 .mail-item:hover .mail-actions {
   opacity: 1;
+}
+
+.mail-item:hover .mail-sent-at {
+  opacity: 0;
 }
 
 .action-btn {
