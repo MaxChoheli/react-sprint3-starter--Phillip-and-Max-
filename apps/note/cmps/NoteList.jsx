@@ -16,6 +16,17 @@ function NoteList({ notes, onDelete, onUpdate }) {
         ev.preventDefault()
     }
 
+    function handleDuplicate(note) {
+        const newNote = {
+            ...structuredClone(note),
+            id: (noteService.getEmptyId && noteService.getEmptyId()) || Date.now().toString()
+        }
+        const updated = [newNote, ...noteList]
+        setNoteList(updated)
+        noteService.saveMany(updated)
+    }
+
+
     function handleDrop(idx) {
         if (draggedIdx === null || draggedIdx === idx) return
         const updated = [...noteList]
@@ -36,19 +47,20 @@ function NoteList({ notes, onDelete, onUpdate }) {
                     onDragOver={handleDragOver}
                     onDrop={() => handleDrop(idx)}
                 >
-                    <NoteItem note={note} onDelete={onDelete} onUpdate={onUpdate} />
+                    <NoteItem note={note} onDelete={onDelete} onUpdate={onUpdate} onDuplicate={handleDuplicate} />
                 </li>
             ))}
         </ul>
     )
 }
 
-function NoteItem({ note, onDelete, onUpdate }) {
+function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
     const [isModalOpen, setIsModalOpen] = React.useState(false)
     const [txt, setTxt] = React.useState(note.info.txt)
     const [title, setTitle] = React.useState(note.info.title || '')
     const [label, setLabel] = React.useState(note.info.label || '')
-    const [bgColor, setBgColor] = React.useState(note.style && note.style.backgroundColor || '#ffffff')
+    const [bgColor, setBgColor] = React.useState((note.style && note.style.backgroundColor) || '#ffffff')
+    const [pinned, setPinned] = React.useState(note.isPinned || false)
     const [showColorPicker, setShowColorPicker] = React.useState(false)
     const [showLabelPicker, setShowLabelPicker] = React.useState(false)
 
@@ -96,7 +108,7 @@ function NoteItem({ note, onDelete, onUpdate }) {
             backgroundColor: bgColor,
             color: '#000000'
         }
-        onUpdate(note.id, txt, bgColor, updatedStyle, title, label)
+        onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned)
     }
 
     function handleLabelChange(value) {
@@ -106,7 +118,7 @@ function NoteItem({ note, onDelete, onUpdate }) {
                 backgroundColor: bgColor,
                 color: '#000000'
             }
-            onUpdate(note.id, txt, bgColor, updatedStyle, title, value)
+            onUpdate(note.id, txt, bgColor, updatedStyle, title, value, pinned)
         }
     }
 
@@ -117,7 +129,20 @@ function NoteItem({ note, onDelete, onUpdate }) {
                 backgroundColor: color,
                 color: '#000000'
             }
-            onUpdate(note.id, txt, color, updatedStyle, title, label)
+            onUpdate(note.id, txt, color, updatedStyle, title, label, pinned)
+        }
+    }
+
+    function togglePin(ev) {
+        ev.stopPropagation()
+        const newPinned = !pinned
+        setPinned(newPinned)
+        if (!isModalOpen) {
+            const updatedStyle = {
+                backgroundColor: bgColor,
+                color: '#000000'
+            }
+            onUpdate(note.id, txt, bgColor, updatedStyle, title, label, newPinned)
         }
     }
 
@@ -147,6 +172,35 @@ function NoteItem({ note, onDelete, onUpdate }) {
                 onMouseEnter={() => noteRef.current.querySelector('.note-actions').style.display = 'flex'}
                 onMouseLeave={() => noteRef.current.querySelector('.note-actions').style.display = 'none'}
             >
+                <button
+                    onClick={togglePin}
+                    className="note-action"
+                    style={{
+                        position: 'absolute',
+                        top: '2px',
+                        right: '2px',
+                        padding: '2px',
+                        fontSize: '16px',
+                        border: 'none',
+                        background: 'transparent',
+                        cursor: 'pointer'
+                    }}
+                    title="Pin note"
+                >
+
+                    <span className="material-symbols-outlined">{pinned ? 'push_pin' : 'push_pin'}</span>
+                </button>
+
+                <button
+                    className="note-action"
+                    onClick={(ev) => { ev.stopPropagation(); onDuplicate(note) }}
+                    style={iconBtnStyle}
+                    title="Duplicate"
+                >
+                    <span className="material-symbols-outlined">content_copy</span>
+                </button>
+
+
                 <h4 style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>{note.info.title}</h4>
                 <p>{note.info.txt}</p>
                 {note.info.label && <p className="note-label">#{note.info.label}</p>}
@@ -252,6 +306,20 @@ function NoteItem({ note, onDelete, onUpdate }) {
                             }}
                         >
                             ✕
+                        </button>
+
+                        <button
+                            onClick={togglePin}
+                            className="note-action"
+                            style={{
+                                ...iconBtnStyle,
+                                position: 'absolute',
+                                top: '10px',
+                                left: '10px'
+                            }}
+                            title="Pin note"
+                        >
+                            <span className="material-symbols-outlined">{pinned ? 'push_pin' : 'push_pin'}</span>
                         </button>
 
                         <textarea

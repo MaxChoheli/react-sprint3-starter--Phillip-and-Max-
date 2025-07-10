@@ -55,6 +55,7 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
                 left: 0,
                 top: 0
             },
+            isPinned: false,
             createdAt: Date.now()
         }
         noteService.save(newNote).then(() => {
@@ -76,8 +77,9 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
         noteService.remove(noteId).then(loadNotes)
     }
 
-    function onUpdateNote(noteId, newText, newBgColor = null, newStyle = null, newTitle = null, newLabel = null) {
+    function onUpdateNote(noteId, newText, newBgColor = null, newStyle = null, newTitle = null, newLabel = null, newIsPinned = null) {
         const note = notes.find(note => note.id === noteId)
+        if (!note) return
         const updatedNote = {
             ...note,
             info: {
@@ -90,9 +92,26 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
                 color: (newStyle && newStyle.color) || (note.style && note.style.color) || '#000000',
                 left: (newStyle && typeof newStyle.left === 'number') ? newStyle.left : (note.style && note.style.left) || 0,
                 top: (newStyle && typeof newStyle.top === 'number') ? newStyle.top : (note.style && note.style.top) || 0
-            }
+            },
+            isPinned: newIsPinned !== null ? newIsPinned : note.isPinned || false
         }
         noteService.save(updatedNote).then(loadNotes)
+    }
+
+    function onDuplicateNote(noteToCopy) {
+        const newNote = {
+            ...structuredClone(noteToCopy),
+            id: Date.now().toString(),
+            createdAt: Date.now(),
+            isPinned: false,
+            style: {
+                backgroundColor: noteToCopy.style && noteToCopy.style.backgroundColor || '#ffffff',
+                color: noteToCopy.style && noteToCopy.style.color || '#000000',
+                left: 0,
+                top: 0
+            }
+        }
+        noteService.save(newNote).then(loadNotes)
     }
 
     function handleAutoResize(ev) {
@@ -117,6 +136,9 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
             (filterByLabel === '' || label === filterByLabel)
         )
     })
+
+    const pinnedNotes = filteredNotes.filter(note => note.isPinned)
+    const unpinnedNotes = filteredNotes.filter(note => !note.isPinned)
 
     return (
         <section className="note-index">
@@ -167,7 +189,7 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
                             </span>
                             {showColors && (
                                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
-                                    {['#faafa8', '#f39f76', '#fff8b8', '#e2f6d3', '#b4ddd3', '#d4e4ed', '#aeccdc', '#d3bfdb', '#f6e2dd', '#e9e3d4', '#efeff1'].map(color => (
+                                    {["#faafa8", "#f39f76", "#fff8b8", "#e2f6d3", "#b4ddd3", "#d4e4ed", "#aeccdc", "#d3bfdb", "#f6e2dd", "#e9e3d4", "#efeff1"].map(color => (
                                         <button
                                             key={color}
                                             type="button"
@@ -193,11 +215,19 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
                 </div>
             </form>
 
-            <NoteList
-                notes={filteredNotes}
-                onDelete={onDeleteNote}
-                onUpdate={onUpdateNote}
-            />
+            {pinnedNotes.length > 0 && (
+                <section style={{ marginTop: '1em' }}>
+                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1.1em' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                            push_pin
+                        </span>
+                        Pinned
+                    </h2>
+                    <NoteList notes={pinnedNotes} onDelete={onDeleteNote} onUpdate={onUpdateNote} onDuplicate={onDuplicateNote} />
+                </section>
+            )}
+
+            <NoteList notes={unpinnedNotes} onDelete={onDeleteNote} onUpdate={onUpdateNote} onDuplicate={onDuplicateNote} />
         </section>
     )
 }
