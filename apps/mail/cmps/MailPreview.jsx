@@ -31,29 +31,26 @@ export function MailPreview({ mail, onMailClick, onToggleRead, onRemoveMail, onT
   }
 
   function formatSentAt(timestamp) {
-  if (!timestamp) return ''
+    if (!timestamp) return ''
 
-  const sentDate = new Date(timestamp)
-  const now = new Date()
+    const sentDate = new Date(timestamp)
+    const now = new Date()
 
-  // If sent today, show time
-  if (
-    sentDate.getDate() === now.getDate() &&
-    sentDate.getMonth() === now.getMonth() &&
-    sentDate.getFullYear() === now.getFullYear()
-  ) {
-    return sentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    if (
+      sentDate.getDate() === now.getDate() &&
+      sentDate.getMonth() === now.getMonth() &&
+      sentDate.getFullYear() === now.getFullYear()
+    ) {
+      return sentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+
+    return sentDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
   }
-
-  // or show date
-  return sentDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-}
 
   return (
     <li className={`mail-item ${isUnread ? 'unread' : ''}`} onClick={onPreviewClick}>
       <div className="mail-left">
         <input type="checkbox" className="mail-checkbox" />
-
         <button
           className="star-btn material-icons"
           style={{ color: mail.isStarred ? 'gold' : 'grey' }}
@@ -61,14 +58,14 @@ export function MailPreview({ mail, onMailClick, onToggleRead, onRemoveMail, onT
         >
           {mail.isStarred ? 'star' : 'star_outline'}
         </button>
-
       </div>
 
-      <div className="mail-center">
-        <span className="mail-from">{mail.from}</span>
+      <span className="mail-from">{mail.from}</span>
+
+      <div className="mail-center" title={`${mail.from} - ${mail.subject} - ${mail.body}`}>
         <div className="mail-info">
           <span className="mail-subject">{mail.subject}</span>
-          <span className="mail-snippet"> - {mail.body}</span>
+          <span className="mail-snippet">- {mail.body}</span>
         </div>
       </div>
 

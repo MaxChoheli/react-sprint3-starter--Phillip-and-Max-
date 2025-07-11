@@ -1,148 +1,156 @@
 .mail-list {
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
+  width: 100%;
+  font-family: Arial, sans-serif;
 }
 
 .mail-item {
   display: flex;
   align-items: center;
   width: 100%;
-  position: relative;
   padding: 12px 16px;
+  box-sizing: border-box;
   cursor: pointer;
+  position: relative;
+  padding-right: 140px; /* space on right for timestamp + buttons */
 }
 
-.mail-item::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 16px;
-  right: 16px;
-  height: 2px;
-  background-color: #1a73e8;
-  opacity: 0;
-  transform: scaleX(1);
-  border-radius: 1px;
-}
-
-.mail-item:hover::after {
-  opacity: 1;
+.mail-item:hover {
+   border-bottom: 2px solid #1a73e8;
 }
 
 .mail-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-shrink: 0;
+  min-width: 80px;
   margin-right: 16px;
+  padding-top: 2px;
 }
 
 .mail-checkbox {
   cursor: pointer;
+  transform: translateY(-4px);
 }
 
 .star-btn {
   background: none;
   border: none;
-  padding: 0;
   cursor: pointer;
   color: #5f6368;
-  font-size: 20px;
+  font-size: 17px;
+  padding: 0;
+  margin-left: 10px;
 }
 
 .star-btn:hover {
   color: #fbbc04;
 }
 
-.mail-center {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex: 1;
-  overflow: hidden;
-}
-
 .mail-from {
-  font-size: 14px;
-  color: #202124;
-  min-width: 140px;
-  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 160px;
   overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
+  font-weight: 600;
+  color: #202124;
 }
 
-.mail-info {
+/* Container for subject + snippet */
+.mail-center {
+  flex-grow: 1;         
+  min-width: 0;         
+  max-width: calc(100% - 80px - 140px - 16px); /* total width - left width - right width - margin */
   display: flex;
+  gap: 8px;
+  align-items: center;
   overflow: hidden;
-  gap: 4px;
+}
+
+/* Wrapper for subject and snippet */
+.mail-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  overflow: hidden;
+  gap: 4px;
+  display: flex;
 }
 
 .mail-subject {
-  font-size: 14px;
-  color: #202124;
-  white-space: nowrap;
+  flex-shrink: 1;
+  flex-grow: 0;
+  max-width: 40%;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #202124;
+  font-weight: normal;
 }
 
 .mail-snippet {
-  font-size: 14px;
-  color: #5f6368;
-  white-space: nowrap;
+  flex-shrink: 1;
+  flex-grow: 1;
+  min-width: 0;
+  max-width: 500px; 
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #5f6368;
 }
 
-/* Bold when unread */
-.mail-item.unread .mail-from,
 .mail-item.unread .mail-subject {
-  font-weight: bold;
+  font-weight: 600;
 }
 
+/* Right container: timestamp + actions */
 .mail-right {
-  position: relative;
-  margin-left: auto;
-  width: 100px; /* fixed width to reserve space at the right */
+  flex-shrink: 0;
+  width: 140px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 8px;
+  margin-left: 16px;
+  position: relative;
 }
 
+/* Timestamp absolutely positioned so buttons cover it */
 .mail-sent-at {
   font-size: 0.9rem;
-  font-weight: bold;
+  font-weight: 600;
   color: #555;
-  white-space: nowrap;
   user-select: none;
-  transition: opacity 0.25s ease;
   position: absolute;
-  margin-right: 6px;
+  right: 40px;
   top: 50%;
   transform: translateY(-50%);
+  white-space: nowrap;
+  transition: opacity 0.3s ease;
   z-index: 1;
-}
-
-.mail-actions {
-  display: flex;
-  gap: 8px;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-}
-
-.mail-item:hover .mail-actions {
-  opacity: 1;
 }
 
 .mail-item:hover .mail-sent-at {
   opacity: 0;
+}
+
+.mail-actions {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+  margin-right: 3px;
+}
+
+.mail-item:hover .mail-actions {
+  opacity: 1;
 }
 
 .action-btn {
@@ -152,10 +160,10 @@
   color: #5f6368;
   font-size: 20px;
   padding: 4px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
