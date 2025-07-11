@@ -10,43 +10,45 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
     const [newTitle, setNewTitle] = useState('')
     const [newLabel, setNewLabel] = useState('')
     const [newColor, setNewColor] = useState('#ffffff')
+    const [imageFile, setImageFile] = useState(null)
     const [isExpanded, setIsExpanded] = useState(false)
     const [showLabels, setShowLabels] = useState(false)
     const [showColors, setShowColors] = useState(false)
 
     const formRef = useRef()
+    const fileInputRef = useRef()
 
     useEffect(() => {
         loadNotes()
     }, [])
 
     useEffect(() => {
-    const params = new URLSearchParams(window.location.hash.split('?')[1])
-    const title = params.get('title')
-    const txt = params.get('txt')
-    const label = params.get('label')
+        const params = new URLSearchParams(window.location.hash.split('?')[1])
+        const title = params.get('title')
+        const txt = params.get('txt')
+        const label = params.get('label')
 
-    if (title || txt) {
-        const newNote = {
-            type: 'NoteTxt',
-            info: { title: title || '', txt: txt || '', label: label || '' },
-            style: {
-                backgroundColor: '#fff',
-                color: '#000',
-                left: 0,
-                top: 0
-            },
-            isPinned: false,
-            createdAt: Date.now()
+        if (title || txt) {
+            const newNote = {
+                type: 'NoteTxt',
+                info: { title: title || '', txt: txt || '', label: label || '', imgUrl: '' },
+                style: {
+                    backgroundColor: '#fff',
+                    color: '#000',
+                    left: 0,
+                    top: 0
+                },
+                isPinned: false,
+                createdAt: Date.now()
+            }
+
+            noteService.save(newNote).then(() => {
+                loadNotes()
+                const cleanHash = window.location.hash.split('?')[0]
+                window.history.replaceState(null, '', cleanHash)
+            })
         }
-
-        noteService.save(newNote).then(() => {
-            loadNotes()
-            const cleanHash = window.location.hash.split('?')[0]
-            window.history.replaceState(null, '', cleanHash)
-        })
-    }
-}, [])
+    }, [])
 
     useEffect(() => {
         function handleClickOutside(ev) {
@@ -70,42 +72,53 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
 
     function onAddNote(ev) {
         ev.preventDefault()
-        const newNote = {
-            type: 'NoteTxt',
-            info: {
-                title: newTitle,
-                txt: newTxt,
-                label: newLabel
-            },
-            style: {
-                backgroundColor: newColor,
-                color: '#000000',
-                left: 0,
-                top: 0
-            },
-            isPinned: false,
-            createdAt: Date.now()
-        }
-        noteService.save(newNote).then(() => {
-            setNewTxt('')
-            setNewTitle('')
-            setNewLabel('')
-            setNewColor('#ffffff')
-            setIsExpanded(false)
-            const txtArea = document.querySelector('.note-form textarea')
-            if (txtArea) {
-                txtArea.style.height = 'auto'
-                txtArea.style.width = 'auto'
+
+        const reader = new FileReader()
+
+        reader.onloadend = () => {
+            const newNote = {
+                type: 'NoteTxt',
+                info: {
+                    title: newTitle,
+                    txt: newTxt,
+                    label: newLabel,
+                    imgUrl: imageFile ? reader.result : ''
+                },
+                style: {
+                    backgroundColor: newColor,
+                    color: '#000000',
+                    left: 0,
+                    top: 0
+                },
+                isPinned: false,
+                createdAt: Date.now()
             }
-            loadNotes()
-        })
+
+            noteService.save(newNote).then(() => {
+                setNewTxt('')
+                setNewTitle('')
+                setNewLabel('')
+                setNewColor('#ffffff')
+                setImageFile(null)
+                setIsExpanded(false)
+                const txtArea = document.querySelector('.note-form textarea')
+                if (txtArea) {
+                    txtArea.style.height = 'auto'
+                    txtArea.style.width = 'auto'
+                }
+                loadNotes()
+            })
+        }
+
+        if (imageFile) reader.readAsDataURL(imageFile)
+        else reader.onloadend()
     }
 
     function onDeleteNote(noteId) {
         noteService.remove(noteId).then(loadNotes)
     }
 
-    function onUpdateNote(noteId, newText, newBgColor = null, newStyle = null, newTitle = null, newLabel = null, newIsPinned = null) {
+    function onUpdateNote(noteId, newText, newBgColor = null, newStyle = null, newTitle = null, newLabel = null, newIsPinned = null, newImgUrl = null) {
         const note = notes.find(note => note.id === noteId)
         if (!note) return
         const updatedNote = {
@@ -113,7 +126,8 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
             info: {
                 txt: newText,
                 title: newTitle !== null ? newTitle : note.info.title,
-                label: newLabel !== null ? newLabel : (note.info.label || '')
+                label: newLabel !== null ? newLabel : (note.info.label || ''),
+                imgUrl: newImgUrl !== null ? newImgUrl : (note.info.imgUrl || '')
             },
             style: {
                 backgroundColor: (newStyle && newStyle.backgroundColor) || (note.style && note.style.backgroundColor) || '#ffffff',
@@ -132,7 +146,8 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
             info: {
                 title: noteToCopy.info.title || '',
                 txt: noteToCopy.info.txt || '',
-                label: noteToCopy.info.label || ''
+                label: noteToCopy.info.label || '',
+                imgUrl: noteToCopy.info.imgUrl || ''
             },
             style: {
                 backgroundColor: (noteToCopy.style && noteToCopy.style.backgroundColor) || '#ffffff',
@@ -190,6 +205,20 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
                         onFocus={() => setIsExpanded(true)}
                         onChange={handleAutoResize}
                     />
+                    {imageFile && (
+                        <img
+                            src={URL.createObjectURL(imageFile)}
+                            alt="Preview"
+                            style={{
+                                width: '100%',
+                                maxHeight: '200px',
+                                objectFit: 'contain',
+                                borderRadius: '8px',
+                                marginTop: '0.5rem'
+                            }}
+                        />
+                    )}
+
                     {isExpanded && (
                         <div className="note-options">
                             <span
@@ -240,6 +269,21 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
                                     ))}
                                 </div>
                             )}
+
+                            <span
+                                className="material-symbols-outlined"
+                                onClick={() => fileInputRef.current.click()}
+                                style={{ cursor: 'pointer', borderRadius: '50%', padding: '4px', backgroundColor: 'transparent' }}
+                            >
+                                photo
+                            </span>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                ref={fileInputRef}
+                                onChange={(e) => setImageFile(e.target.files[0])}
+                            />
 
                             {newTxt.trim() && <button>Add</button>}
                         </div>

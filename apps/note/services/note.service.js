@@ -44,16 +44,22 @@ function _createDemoNotes() {
     }
 }
 
-function handleUpdate(noteId, newTxt, newBgColor, newTxtColor, newPos) {
-    noteService.get(noteId).then(note => {
-        if (!note) return
-        note.info.txt = newTxt
-        note.style = {
-            backgroundColor: newBgColor,
-            color: newTxtColor
-        }
-        note.pos = newPos
-        noteService.save(note).then(loadNotes)
+function handleUpdate(noteId, txt, color, style, title, label, pinned, image) {
+    const noteToUpdate = notes.find(note => note.id === noteId)
+    if (!noteToUpdate) return
+
+    noteToUpdate.info.txt = txt
+    noteToUpdate.style = style
+    noteToUpdate.style.backgroundColor = color
+    noteToUpdate.info.title = title
+    noteToUpdate.info.label = label
+    noteToUpdate.isPinned = pinned
+    noteToUpdate.info.image = image
+
+    noteService.save(noteToUpdate).then(savedNote => {
+        setNotes(prevNotes =>
+            prevNotes.map(note => (note.id === savedNote.id ? savedNote : note))
+        )
     })
 }
 

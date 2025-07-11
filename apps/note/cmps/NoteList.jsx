@@ -52,6 +52,9 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
     const [pinned, setPinned] = React.useState(note.isPinned || false)
     const [showColorPicker, setShowColorPicker] = React.useState(false)
     const [showLabelPicker, setShowLabelPicker] = React.useState(false)
+    const [imageUrl, setImageUrl] = React.useState(note.info.imgUrl || '')
+    const fileInputRef = React.useRef()
+
 
     const colorOptions = ['#faafa8', '#f39f76', '#fff8b8', '#e2f6d3', '#b4ddd3', '#d4e4ed', '#aeccdc', '#d3bfdb', '#f6e2dd', '#e9e3d4', '#efeff1']
 
@@ -86,6 +89,24 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
         el.style.width = el.scrollWidth < 400 ? el.scrollWidth + 'px' : '400px'
     }
 
+    function handleMouseEnter() {
+        const el = noteRef.current
+        if (!el) return
+        const actions = el.querySelector('.note-actions')
+        const pin = el.querySelector('.note-pin')
+        if (actions) actions.style.display = 'flex'
+        if (pin) pin.style.display = 'block'
+    }
+
+    function handleMouseLeave() {
+        const el = noteRef.current
+        if (!el) return
+        const actions = el.querySelector('.note-actions')
+        const pin = el.querySelector('.note-pin')
+        if (actions) actions.style.display = 'none'
+        if (pin) pin.style.display = 'none'
+    }
+
     function openModal(ev) {
         if (ev.target.closest('.note-action')) return
         setIsModalOpen(true)
@@ -97,7 +118,7 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
             backgroundColor: bgColor,
             color: '#000000'
         }
-        onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned)
+        onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned, imageUrl)
     }
 
     function handleLabelChange(value) {
@@ -107,7 +128,7 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                 backgroundColor: bgColor,
                 color: '#000000'
             }
-            onUpdate(note.id, txt, bgColor, updatedStyle, title, value, pinned)
+            onUpdate(note.id, txt, bgColor, updatedStyle, title, value, pinned, imageUrl)
         }
     }
 
@@ -118,7 +139,7 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                 backgroundColor: color,
                 color: '#000000'
             }
-            onUpdate(note.id, txt, color, updatedStyle, title, label, pinned)
+            onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned, imageUrl)
         }
     }
 
@@ -131,7 +152,8 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                 backgroundColor: bgColor,
                 color: '#000000'
             }
-            onUpdate(note.id, txt, bgColor, updatedStyle, title, label, newPinned)
+            onUpdate(note.id, txt, bgColor, updatedStyle, title, label, newPinned, imageUrl)
+
         }
     }
 
@@ -158,37 +180,73 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                     position: 'relative',
                     paddingBottom: '144px'
                 }}
-                onMouseEnter={() => noteRef.current.querySelector('.note-actions').style.display = 'flex'}
-                onMouseLeave={() => noteRef.current.querySelector('.note-actions').style.display = 'none'}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+
             >
-                <button
-                    onClick={togglePin}
-                    className="note-action"
+                <div
+                    className="note-pin note-action"
                     style={{
                         position: 'absolute',
                         top: '2px',
                         right: '2px',
-                        padding: '2px',
-                        fontSize: '16px',
-                        border: 'none',
-                        background: 'none',
-                        boxShadow: 'none',
-                        outline: 'none',
-                        cursor: 'pointer'
+                        display: 'none',
+                        zIndex: 2
                     }}
-                    title="Pin note"
                 >
-                    <span className="material-symbols-outlined">{pinned ? 'push_pin' : 'push_pin'}</span>
-                </button>
+                    <button
+                        onClick={togglePin}
+                        className="note-action"
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            borderRadius: '50%',
+                            cursor: 'pointer',
+                            padding: '4px',
+                            boxShadow: 'none',
+                            outline: 'none'
+                        }}
+                        title="Pin note"
+                    >
+                        <span className="material-symbols-outlined">{pinned ? 'push_pin' : 'push_pin'}</span>
+                    </button>
+                </div>
 
-                <button
-                    className="note-action"
-                    onClick={(ev) => { ev.stopPropagation(); onDuplicate(note) }}
-                    style={iconBtnStyle}
-                    title="Duplicate"
-                >
-                    <span className="material-symbols-outlined">content_copy</span>
-                </button>
+                {imageUrl && (
+                    <img
+                        src={imageUrl}
+                        alt="Note"
+                        style={{
+                            width: '100%',
+                            maxHeight: '200px',
+                            objectFit: 'contain',
+                            borderRadius: '8px',
+                            marginBottom: '0.5rem'
+                        }}
+                    />
+                )}
+
+                <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={(ev) => {
+                        const file = ev.target.files[0]
+                        if (!file) return
+                        const reader = new FileReader()
+                        reader.onload = () => {
+                            const base64 = reader.result
+                            setImageUrl(base64)
+                            const updatedStyle = {
+                                backgroundColor: bgColor,
+                                color: '#000000'
+                            }
+                            onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned, base64)
+                        }
+                        reader.readAsDataURL(file)
+                    }}
+                />
 
                 <h4 style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>{note.info.title}</h4>
                 <p>{note.info.txt}</p>
@@ -204,7 +262,14 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                     <button className="note-action" onClick={(ev) => { ev.stopPropagation(); setShowColorPicker(prev => !prev); setShowLabelPicker(false) }} style={iconBtnStyle}>
                         <span className="material-symbols-outlined">palette</span>
                     </button>
+                    <button className="note-action" onClick={(ev) => { ev.stopPropagation(); fileInputRef.current.click() }} style={iconBtnStyle}>
+                        <span className="material-symbols-outlined">photo</span>
+                    </button>
+                    <button className="note-action" onClick={(ev) => { ev.stopPropagation(); onDuplicate(note) }} style={iconBtnStyle}>
+                        <span className="material-symbols-outlined">content_copy</span>
+                    </button>
                 </div>
+
 
                 {!isModalOpen && (showColorPicker || showLabelPicker) && (
                     <div style={{ position: 'absolute', bottom: '100px', left: '6px' }}>
@@ -301,6 +366,41 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                         >
                             <span className="material-symbols-outlined">{pinned ? 'push_pin' : 'push_pin'}</span>
                         </button>
+                        {imageUrl && (
+                            <img
+                                src={imageUrl}
+                                alt="Note"
+                                style={{
+                                    width: '100%',
+                                    maxHeight: '250px',
+                                    objectFit: 'contain',
+                                    borderRadius: '8px',
+                                    marginBottom: '1rem'
+                                }}
+                            />
+                        )}
+
+                        <input
+                            type="file"
+                            accept="image/*"
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
+                            onChange={(ev) => {
+                                const file = ev.target.files[0]
+                                if (!file) return
+                                const reader = new FileReader()
+                                reader.onload = () => {
+                                    const base64 = reader.result
+                                    setImageUrl(base64)
+                                    const updatedStyle = {
+                                        backgroundColor: bgColor,
+                                        color: '#000000'
+                                    }
+                                    onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned, base64)
+                                }
+                                reader.readAsDataURL(file)
+                            }}
+                        />
 
                         <div style={{
                             position: 'absolute',
@@ -324,8 +424,6 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                                 Close
                             </button>
                         </div>
-
-
 
                         <textarea
                             value={title}
@@ -399,6 +497,26 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                                 <span className="material-symbols-outlined">delete</span>
                             </button>
 
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current.click()}
+                                style={iconBtnStyle}
+                                className="note-action"
+                                title="Add Image"
+                            >
+                                <span className="material-symbols-outlined">photo</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => onDuplicate(note)}
+                                style={iconBtnStyle}
+                                className="note-action"
+                                title="Duplicate"
+                            >
+                                <span className="material-symbols-outlined">content_copy</span>
+                            </button>
+
                             {showLabelPicker && (
                                 <select
                                     value={label}
@@ -436,6 +554,7 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                                 </div>
                             )}
                         </div>
+
                     </div>
                 </div>
             )}
