@@ -72,7 +72,17 @@ export function MailPreview({ mail, onMailClick, onToggleRead, onRemoveMail, onT
       <div className="mail-right">
         <span className="mail-sent-at">{formatSentAt(mail.sentAt)}</span>
         <div className="mail-actions">
-          <button className="action-btn material-symbols-outlined">archive</button>
+          <button
+            className="action-btn material-symbols-outlined"
+            onClick={(ev) => {
+              ev.stopPropagation()
+              window.location.href = `#/note?txt=${encodeURIComponent(mail.body)}&title=${encodeURIComponent(mail.subject)}&label=mail`
+            }}
+            title="Save as Note"
+          >
+            note_add
+          </button>
+          
           <button className="action-btn material-symbols-outlined" onClick={onDelete} title="Delete mail">
             delete
           </button>

@@ -21,6 +21,34 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
     }, [])
 
     useEffect(() => {
+    const params = new URLSearchParams(window.location.hash.split('?')[1])
+    const title = params.get('title')
+    const txt = params.get('txt')
+    const label = params.get('label')
+
+    if (title || txt) {
+        const newNote = {
+            type: 'NoteTxt',
+            info: { title: title || '', txt: txt || '', label: label || '' },
+            style: {
+                backgroundColor: '#fff',
+                color: '#000',
+                left: 0,
+                top: 0
+            },
+            isPinned: false,
+            createdAt: Date.now()
+        }
+
+        noteService.save(newNote).then(() => {
+            loadNotes()
+            const cleanHash = window.location.hash.split('?')[0]
+            window.history.replaceState(null, '', cleanHash)
+        })
+    }
+}, [])
+
+    useEffect(() => {
         function handleClickOutside(ev) {
             if (
                 isExpanded &&
