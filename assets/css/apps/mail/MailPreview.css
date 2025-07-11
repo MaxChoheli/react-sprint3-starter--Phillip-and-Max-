@@ -15,6 +15,7 @@
   cursor: pointer;
   position: relative;
   padding-right: 140px; /* space on right for timestamp + buttons */
+  font-weight: normal;
 }
 
 .mail-item:hover {
@@ -53,8 +54,12 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-weight: 600;
+  font-weight: normal;
   color: #202124;
+}
+
+.mail-item.unread .mail-from {
+  font-weight: bold;
 }
 
 /* Container for subject + snippet */
@@ -82,7 +87,7 @@
 .mail-subject {
   flex-shrink: 1;
   flex-grow: 0;
-  max-width: 40%;
+  max-width: 20vw;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

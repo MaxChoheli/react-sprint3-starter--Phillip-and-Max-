@@ -4,13 +4,15 @@ import { MailList } from '../cmps/MailList.jsx'
 import { MailFolderList } from '../cmps/MailFolderList.jsx'
 import { MailCompose } from '../cmps/MailCompose.jsx'
 import { mailService } from '../services/mail.service.js'
-const { useNavigate } = ReactRouterDOM
+const { useNavigate, useSearchParams } = ReactRouterDOM
 
 export function MailIndex() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const initialStatus = searchParams.get('status') || 'inbox'
 
   const [mails, setMails] = useState([])
-  const [filterBy, setFilterBy] = useState({ status: 'inbox', txt: '', isRead: null })
+  const [filterBy, setFilterBy] = useState({ status: initialStatus, txt: '', isRead: null })
   const [isComposing, setIsComposing] = useState(false)
   const [draftToEdit, setDraftToEdit] = useState(null)
   const [sortBy, setSortBy] = useState({ field: 'date', direction: 'desc' })
@@ -56,7 +58,7 @@ export function MailIndex() {
       setDraftToEdit(mail)
       setIsComposing(true)
     } else {
-      navigate(`/mail/${mail.id}`)
+      navigate(`/mail/${mail.id}`, { state: { folder: filterBy.status } })
     }
   }
 

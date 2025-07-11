@@ -1,5 +1,6 @@
 const { useState, useEffect } = React
 import { utilService } from '../../../services/util.service.js'
+import { mailService } from '../services/mail.service.js'
 
 export function MailCompose({ mail, onClose, onSend, onSaveDraft }) {
  
@@ -20,21 +21,36 @@ export function MailCompose({ mail, onClose, onSend, onSaveDraft }) {
   }, [mail])
 
   function handleSend() {
-    const mailToSend = { ...mail, to, subject, body, status: 'sent' }
-    onSend(mailToSend)
+  const mailToSend = {
+    id: (mail && mail.id) ? mail.id : utilService.makeId(),
+    to,
+    from: mailService.getLoggedinUser().email,
+    subject,
+    body,
+    status: 'sent',
+    isRead: true,
+    isStarred: false,
+    sentAt: Date.now(),
+    removedAt: null,
   }
+  onSend(mailToSend)
+}
 
   function handleSaveDraft() {
-    const draftMail = {
-      ...mail,
-      id: mail && mail.id ? mail.id : utilService.makeId(),
-      to,
-      subject,
-      body,
-      status: 'draft',
-    }
-    onSaveDraft(draftMail)
+  const draftMail = {
+    id: (mail && mail.id) ? mail.id : utilService.makeId(),
+    to,
+    from: mailService.getLoggedinUser().email,
+    subject,
+    body,
+    status: 'draft',
+    isRead: true,
+    isStarred: false,
+    sentAt: null,
+    removedAt: null,
   }
+  onSaveDraft(draftMail)
+}
 
   return (
     <section className="mail-compose">

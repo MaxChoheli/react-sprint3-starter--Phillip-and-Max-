@@ -22,7 +22,7 @@ export function MailPreview({ mail, onMailClick, onToggleRead, onRemoveMail, onT
 
   function onToggleReadIcon(ev) {
     ev.stopPropagation()
-    onToggleRead({ ...mail, isRead: !mail.isRead })
+    onToggleRead(mail)
   }
 
   function onStarClick(ev) {
@@ -48,7 +48,7 @@ export function MailPreview({ mail, onMailClick, onToggleRead, onRemoveMail, onT
   }
 
   return (
-    <li className={`mail-item ${isUnread ? 'unread' : ''}`} onClick={onPreviewClick}>
+    <li className={`mail-item ${!mail.isRead ? 'unread' : ''}`} onClick={onPreviewClick}>
       <div className="mail-left">
         <input type="checkbox" className="mail-checkbox" />
         <button
@@ -82,7 +82,7 @@ export function MailPreview({ mail, onMailClick, onToggleRead, onRemoveMail, onT
           >
             note_add
           </button>
-          
+
           <button className="action-btn material-symbols-outlined" onClick={onDelete} title="Delete mail">
             delete
           </button>

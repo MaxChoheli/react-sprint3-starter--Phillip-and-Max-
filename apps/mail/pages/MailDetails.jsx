@@ -1,19 +1,27 @@
 const { useState, useEffect } = React
-const { useParams, useNavigate } = ReactRouterDOM
-
+const { useParams, useNavigate, useLocation } = ReactRouterDOM
 import { mailService } from '../services/mail.service.js'
 
 export function MailDetails() {
   const [mail, setMail] = useState(null)
   const { mailId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
-    mailService.get(mailId).then(setMail)
+    mailService.get(mailId).then(mail => {
+      setMail(mail)
+      // Mark as read if not already
+      if (!mail.isRead) {
+        mail.isRead = true
+        mailService.save(mail) // save update so it persists
+      }
+    })
   }, [mailId])
 
-  function onBack() {
-    navigate('/mail')
+    function onBack() {
+    const folder = (location.state && location.state.folder) || 'inbox'
+    navigate(`/mail?status=${folder}`)
   }
 
   function onDelete() {

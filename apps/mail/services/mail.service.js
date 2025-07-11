@@ -59,9 +59,11 @@ for (let i = 0; i < 15; i++) {
     mail.from = senders[utilService.getRandomIntInclusive(0, senders.length - 1)]
   } else if (status === 'sent') {
     mail.from = 'user@appsus.com'
+    mail.isRead = true
   } else if (status === 'draft') {
     mail.from = 'user@appsus.com'
     mail.sentAt = null
+    mail.isRead = true
   } else if (status === 'trash') {
     // For trash, can be from or to user, mark removedAt
     const fromIsUser = Math.random() > 0.5
@@ -163,7 +165,7 @@ function send(mail) {
   mail.status = 'sent'
   mail.sentAt = Date.now()
   if (!mail.id) mail.id = utilService.makeId()
-  return save(mail)
+  return save(mail) 
 }
 
 function get(mailId) {
@@ -186,7 +188,11 @@ function remove(mailId) {
 
 function save(mail) {
   if (!mail.id) mail.id = utilService.makeId()
-  return storageService.put(MAIL_KEY, mail).catch(() => storageService.post(MAIL_KEY, mail))
+
+  // Try to update existing mail first
+  return storageService.get(MAIL_KEY, mail.id)
+    .then(() => storageService.put(MAIL_KEY, mail))  // If found, update
+    .catch(() => storageService.post(MAIL_KEY, mail)) // If not found, add new
 }
 
 function getLoggedinUser() {
