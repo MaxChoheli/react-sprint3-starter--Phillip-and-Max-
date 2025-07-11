@@ -100,16 +100,20 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
 
     function onDuplicateNote(noteToCopy) {
         const newNote = {
-            ...structuredClone(noteToCopy),
-            id: Date.now().toString(),
-            createdAt: Date.now(),
-            isPinned: false,
+            type: 'NoteTxt',
+            info: {
+                title: noteToCopy.info.title || '',
+                txt: noteToCopy.info.txt || '',
+                label: noteToCopy.info.label || ''
+            },
             style: {
-                backgroundColor: noteToCopy.style && noteToCopy.style.backgroundColor || '#ffffff',
-                color: noteToCopy.style && noteToCopy.style.color || '#000000',
+                backgroundColor: (noteToCopy.style && noteToCopy.style.backgroundColor) || '#ffffff',
+                color: '#000000',
                 left: 0,
                 top: 0
-            }
+            },
+            isPinned: false,
+            createdAt: Date.now()
         }
         noteService.save(newNote).then(loadNotes)
     }

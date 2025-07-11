@@ -1,6 +1,6 @@
 import { noteService } from '../services/note.service.js'
 
-function NoteList({ notes, onDelete, onUpdate }) {
+function NoteList({ notes, onDelete, onUpdate, onDuplicate }) {
     const [noteList, setNoteList] = React.useState(notes)
     const [draggedIdx, setDraggedIdx] = React.useState(null)
 
@@ -15,17 +15,6 @@ function NoteList({ notes, onDelete, onUpdate }) {
     function handleDragOver(ev) {
         ev.preventDefault()
     }
-
-    function handleDuplicate(note) {
-        const newNote = {
-            ...structuredClone(note),
-            id: (noteService.getEmptyId && noteService.getEmptyId()) || Date.now().toString()
-        }
-        const updated = [newNote, ...noteList]
-        setNoteList(updated)
-        noteService.saveMany(updated)
-    }
-
 
     function handleDrop(idx) {
         if (draggedIdx === null || draggedIdx === idx) return
@@ -47,7 +36,7 @@ function NoteList({ notes, onDelete, onUpdate }) {
                     onDragOver={handleDragOver}
                     onDrop={() => handleDrop(idx)}
                 >
-                    <NoteItem note={note} onDelete={onDelete} onUpdate={onUpdate} onDuplicate={handleDuplicate} />
+                    <NoteItem note={note} onDelete={onDelete} onUpdate={onUpdate} onDuplicate={onDuplicate} />
                 </li>
             ))}
         </ul>
@@ -182,12 +171,13 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                         padding: '2px',
                         fontSize: '16px',
                         border: 'none',
-                        background: 'transparent',
+                        background: 'none',
+                        boxShadow: 'none',
+                        outline: 'none',
                         cursor: 'pointer'
                     }}
                     title="Pin note"
                 >
-
                     <span className="material-symbols-outlined">{pinned ? 'push_pin' : 'push_pin'}</span>
                 </button>
 
@@ -199,7 +189,6 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                 >
                     <span className="material-symbols-outlined">content_copy</span>
                 </button>
-
 
                 <h4 style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>{note.info.title}</h4>
                 <p>{note.info.txt}</p>
@@ -294,33 +283,49 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                         }}
                     >
                         <button
-                            onClick={closeModal}
-                            style={{
-                                position: 'absolute',
-                                top: '10px',
-                                right: '10px',
-                                background: 'none',
-                                border: 'none',
-                                fontSize: '1.5rem',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            ✕
-                        </button>
-
-                        <button
                             onClick={togglePin}
                             className="note-action"
                             style={{
-                                ...iconBtnStyle,
+                                background: 'none',
+                                border: 'none',
+                                borderRadius: '50%',
+                                cursor: 'pointer',
+                                padding: '6px',
+                                boxShadow: 'none',
+                                outline: 'none',
                                 position: 'absolute',
                                 top: '10px',
-                                left: '10px'
+                                right: '10px'
                             }}
                             title="Pin note"
                         >
                             <span className="material-symbols-outlined">{pinned ? 'push_pin' : 'push_pin'}</span>
                         </button>
+
+                        <div style={{
+                            position: 'absolute',
+                            bottom: '1rem',
+                            right: '1rem'
+                        }}>
+                            <button
+                                onClick={closeModal}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    boxShadow: 'none',
+                                    outline: 'none',
+                                    color: '#000',
+                                    cursor: 'pointer',
+                                    fontSize: '1rem',
+                                    textDecoration: 'underline',
+                                    padding: 0
+                                }}
+                            >
+                                Close
+                            </button>
+                        </div>
+
+
 
                         <textarea
                             value={title}
