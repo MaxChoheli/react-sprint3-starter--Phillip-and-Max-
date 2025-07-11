@@ -4,14 +4,12 @@ import '/assets/css/apps/note/NoteIndex.css'
 
 const { useState, useEffect, useRef } = React
 
-export function NoteIndex({ filterByTxt, setFilterByTxt }) {
+export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
     const [notes, setNotes] = useState([])
     const [newTxt, setNewTxt] = useState('')
     const [newTitle, setNewTitle] = useState('')
     const [newLabel, setNewLabel] = useState('')
     const [newColor, setNewColor] = useState('#ffffff')
-    const [filterByType, setFilterByType] = useState('')
-    const [filterByLabel, setFilterByLabel] = useState('')
     const [isExpanded, setIsExpanded] = useState(false)
     const [showLabels, setShowLabels] = useState(false)
     const [showColors, setShowColors] = useState(false)
@@ -57,6 +55,7 @@ export function NoteIndex({ filterByTxt, setFilterByTxt }) {
                 left: 0,
                 top: 0
             },
+            isPinned: false,
             createdAt: Date.now()
         }
         noteService.save(newNote).then(() => {
@@ -78,8 +77,9 @@ export function NoteIndex({ filterByTxt, setFilterByTxt }) {
         noteService.remove(noteId).then(loadNotes)
     }
 
-    function onUpdateNote(noteId, newText, newBgColor = null, newStyle = null, newTitle = null, newLabel = null) {
+    function onUpdateNote(noteId, newText, newBgColor = null, newStyle = null, newTitle = null, newLabel = null, newIsPinned = null) {
         const note = notes.find(note => note.id === noteId)
+        if (!note) return
         const updatedNote = {
             ...note,
             info: {
@@ -92,9 +92,30 @@ export function NoteIndex({ filterByTxt, setFilterByTxt }) {
                 color: (newStyle && newStyle.color) || (note.style && note.style.color) || '#000000',
                 left: (newStyle && typeof newStyle.left === 'number') ? newStyle.left : (note.style && note.style.left) || 0,
                 top: (newStyle && typeof newStyle.top === 'number') ? newStyle.top : (note.style && note.style.top) || 0
-            }
+            },
+            isPinned: newIsPinned !== null ? newIsPinned : note.isPinned || false
         }
         noteService.save(updatedNote).then(loadNotes)
+    }
+
+    function onDuplicateNote(noteToCopy) {
+        const newNote = {
+            type: 'NoteTxt',
+            info: {
+                title: noteToCopy.info.title || '',
+                txt: noteToCopy.info.txt || '',
+                label: noteToCopy.info.label || ''
+            },
+            style: {
+                backgroundColor: (noteToCopy.style && noteToCopy.style.backgroundColor) || '#ffffff',
+                color: '#000000',
+                left: 0,
+                top: 0
+            },
+            isPinned: false,
+            createdAt: Date.now()
+        }
+        noteService.save(newNote).then(loadNotes)
     }
 
     function handleAutoResize(ev) {
@@ -107,18 +128,21 @@ export function NoteIndex({ filterByTxt, setFilterByTxt }) {
         el.style.width = el.scrollWidth < 400 ? el.scrollWidth + 'px' : '400px'
     }
 
-    const filteredNotes = [...notes].filter(note => {
+    const filteredNotes = notes.filter(note => {
         const title = (note.info.title || '').toLowerCase()
         const txt = (note.info.txt || '').toLowerCase()
         const label = note.info.label || ''
         const type = note.type || ''
         return (
-            title.includes(filterByTxt.toLowerCase()) ||
-            txt.includes(filterByTxt.toLowerCase())
-        ) &&
+            (title.includes(filterByTxt.toLowerCase()) ||
+                txt.includes(filterByTxt.toLowerCase())) &&
             (filterByType === '' || type === filterByType) &&
             (filterByLabel === '' || label === filterByLabel)
+        )
     })
+
+    const pinnedNotes = filteredNotes.filter(note => note.isPinned)
+    const unpinnedNotes = filteredNotes.filter(note => !note.isPinned)
 
     return (
         <section className="note-index">
@@ -169,7 +193,7 @@ export function NoteIndex({ filterByTxt, setFilterByTxt }) {
                             </span>
                             {showColors && (
                                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
-                                    {['#faafa8', '#f39f76', '#fff8b8', '#e2f6d3', '#b4ddd3', '#d4e4ed', '#aeccdc', '#d3bfdb', '#f6e2dd', '#e9e3d4', '#efeff1'].map(color => (
+                                    {["#faafa8", "#f39f76", "#fff8b8", "#e2f6d3", "#b4ddd3", "#d4e4ed", "#aeccdc", "#d3bfdb", "#f6e2dd", "#e9e3d4", "#efeff1"].map(color => (
                                         <button
                                             key={color}
                                             type="button"
@@ -195,30 +219,19 @@ export function NoteIndex({ filterByTxt, setFilterByTxt }) {
                 </div>
             </form>
 
-            <section className="note-filter">
-                <select value={filterByType} onChange={(ev) => setFilterByType(ev.target.value)}>
-                    <option value="">All Types</option>
-                    <option value="NoteTxt">Text</option>
-                    <option value="NoteImg">Image</option>
-                    <option value="NoteVideo">Video</option>
-                </select>
-                <select value={filterByLabel} onChange={(ev) => setFilterByLabel(ev.target.value)}>
-                    <option value="">All Labels</option>
-                    <option value="critical">Critical</option>
-                    <option value="family">Family</option>
-                    <option value="work">Work</option>
-                    <option value="friends">Friends</option>
-                    <option value="spam">Spam</option>
-                    <option value="memories">Memories</option>
-                    <option value="romantic">Romantic</option>
-                </select>
-            </section>
+            {pinnedNotes.length > 0 && (
+                <section style={{ marginTop: '1em' }}>
+                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1.1em' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                            push_pin
+                        </span>
+                        Pinned
+                    </h2>
+                    <NoteList notes={pinnedNotes} onDelete={onDeleteNote} onUpdate={onUpdateNote} onDuplicate={onDuplicateNote} />
+                </section>
+            )}
 
-            <NoteList
-                notes={filteredNotes}
-                onDelete={onDeleteNote}
-                onUpdate={onUpdateNote}
-            />
+            <NoteList notes={unpinnedNotes} onDelete={onDeleteNote} onUpdate={onUpdateNote} onDuplicate={onDuplicateNote} />
         </section>
     )
 }
