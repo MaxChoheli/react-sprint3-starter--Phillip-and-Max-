@@ -1,90 +1,161 @@
- /* mail index  */
-
- .mail-index {
+.mail-index {
   display: flex;
   height: 100vh;
-  font-family: Arial, sans-serif;
+  overflow-x: hidden;
+  /* prevent horizontal scroll */
+  overflow-y: auto;
+  /* allow vertical scroll */
 }
 
+/* === Sidebar === */
 .mail-sidebar {
   width: 240px;
-  padding: 20px;
-  border-right: 1px solid #dadce0;
   background-color: #f1f3f4;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  padding: 1em;
+  border-right: 1px solid #ccc;
+  transition: transform 0.3s ease;
+  /* Desktop: sidebar static */
+  position: relative;
+  z-index: 1;
 }
 
+.mail-sidebar .compose-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  background-color: #c2e7ff;
+  border: none;
+  padding: 0.75em 1em;
+  border-radius: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 1em;
+}
+
+.compose-btn {
+  width: 175px;
+  justify-content: center;
+  padding-right: 15px;
+}
+
+.mail-sidebar .compose-btn .material-icons {
+  font-size: 1.2em;
+}
+
+/* === Sidebar Hidden on Mobile === */
+@media (max-width: 768px) {
+  .mail-sidebar {
+    position: fixed;
+    /* Overlay */
+    top: 0;
+    left: 0;
+    height: 100%;
+    transform: translateX(-100%);
+    z-index: 100;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    width: 240px;
+  }
+
+  .mail-sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+/* === Main Area === */
 .mail-main {
   flex: 1;
   display: flex;
   flex-direction: column;
+  background-color: #fff;
+  overflow-y: auto;
+  transition: margin-left 0.3s ease;
 }
 
+/* On mobile, remove left margin */
+@media (max-width: 768px) {
+  .mail-main {
+    margin-left: 0;
+  }
+}
+
+/* === Filter Bar === */
+.mail-filter-wrapper {
+  padding: 1em;
+  border-bottom: 1px solid #ccc;
+  background-color: #fff;
+}
+
+/* === Filter Bar Contents === */
 .mail-filter {
-  padding: 16px;
-  display: flex;
-  justify-content: center;
-}
-
-.search-bar {
   display: flex;
   align-items: center;
-  background-color: #f1f3f4;
-  border-radius: 24px;
-  padding: 8px 16px;
-  width: 100%;
-  max-width: 720px;
-  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.1);
-  transition: box-shadow 0.2s ease;
+  flex-wrap: wrap;
+  gap: 1em;
 }
 
-.search-bar:focus-within {
-  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3);
-}
-
-.search-bar .material-icons {
-  color: #5f6368;
-  font-size: 20px;
-  margin-right: 12px;
-}
-
-.search-bar input {
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 16px;
-  flex: 1;
+.mail-filter select {
+  border-radius: 20px;
+  cursor: pointer;
   color: #202124;
 }
 
-.search-bar select {
-  border: none;
-  background: transparent;
-  font-size: 14px;
-  margin-left: 12px;
-  color: #5f6368;
-  cursor: pointer;
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
 }
 
-.compose-btn {
-  background-color: #c2e7ff;
-  color: #001d35;
-  font-weight: 500;
-  font-size: 14px;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 24px;
-  margin: 16px;
-  cursor: pointer;
-  width: 80%;
-  text-align: left;
+.search-input-wrapper input {
+  width: 100%;
+  padding: 10px 12px 10px 48px;
+  /* 👈 Adds left space for the icon */
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  background-color: #f6f8fc;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.search-input-wrapper input:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: #5f6368;
+  pointer-events: none;
+}
+
+/* Search and Menu */
+.search-wrapper {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.5em;
+  flex: 1;
+  min-width: 200px;
 }
 
-.compose-btn .material-icons {
-  font-size: 20px;
+/* Hamburger button */
+.menu-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: none;
+  /* Hidden on desktop */
+}
+
+/* Show hamburger on mobile */
+@media (max-width: 768px) {
+  .menu-btn {
+    display: inline-flex;
+  }
+}
+
+.menu-btn .material-icons {
+  font-size: 24px;
 }

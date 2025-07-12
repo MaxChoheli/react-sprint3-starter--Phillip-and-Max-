@@ -1,56 +1,43 @@
-const { useState, useEffect } = React
-import { MailFilter } from '../cmps/MailFilter.jsx'
-import { MailList } from '../cmps/MailList.jsx'
+const { useState, useRef, useEffect } = React
 import { MailFolderList } from '../cmps/MailFolderList.jsx'
+import { MailFilter } from '../cmps/MailFilter.jsx'
 import { MailCompose } from '../cmps/MailCompose.jsx'
+import { MailList } from '../cmps/MailList.jsx'
 import { mailService } from '../services/mail.service.js'
-const { useNavigate, useSearchParams } = ReactRouterDOM
+
+const { useNavigate, useLocation } = ReactRouterDOM
 
 export function MailIndex() {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const initialStatus = searchParams.get('status') || 'inbox'
-
+  console.log('MailIndex rendered')
   const [mails, setMails] = useState([])
-  const [filterBy, setFilterBy] = useState({ status: initialStatus, txt: '', isRead: null })
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isComposing, setIsComposing] = useState(false)
-  const [draftToEdit, setDraftToEdit] = useState(null)
+  const location = useLocation()
+  const queryParams = new URLSearchParams(location.search)
+  const initialStatus = queryParams.get('status') || 'inbox'
+  const [filterBy, setFilterBy] = useState({ txt: '', isRead: null, status: initialStatus })
   const [sortBy, setSortBy] = useState({ field: 'date', direction: 'desc' })
+  const sidebarRef = useRef()
+  const navigate = useNavigate()
+  const [draftToEdit, setDraftToEdit] = useState(null)
+
 
   useEffect(() => {
-    mailService.initDemoData().then(loadAndSortMails)
+    mailService.query(filterBy, sortBy).then(setMails)
   }, [filterBy, sortBy])
 
-  function loadAndSortMails() {
-    mailService.query(filterBy).then(mails => {
-      const sortedMails = [...mails].sort((a, b) => {
-        if (sortBy.field === 'date') {
-          return sortBy.direction === 'asc' ? a.sentAt - b.sentAt : b.sentAt - a.sentAt
-        } else if (sortBy.field === 'title') {
-          return sortBy.direction === 'asc'
-            ? a.subject.localeCompare(b.subject)
-            : b.subject.localeCompare(a.subject)
-        }
-      })
-      setMails(sortedMails)
-    })
+  function toggleSidebar() {
+    console.log('Hamburger clicked, toggling sidebar')
+    setIsSidebarOpen(prev => !prev)
   }
 
   function onSetFolder(status) {
     setFilterBy(prev => ({ ...prev, status }))
+    setIsSidebarOpen(false)
   }
 
-  function onToggleStarred(mail) {
-    mailService.toggleStarred(mail).then(loadAndSortMails)
-  }
-
-  function onToggleRead(mail) {
-    mail.isRead = !mail.isRead
-    mailService.save(mail).then(loadAndSortMails)
-  }
-
-  function onRemoveMail(mailId) {
-    mailService.remove(mailId).then(loadAndSortMails)
+  function onToggleCompose() {
+    setIsComposing(prev => !prev)
   }
 
   function onMailClick(mail) {
@@ -62,36 +49,61 @@ export function MailIndex() {
     }
   }
 
-  function onSend(mail) {
-    mailService.send(mail).then(() => {
+
+  function onToggleStarred(mail) {
+    const updated = { ...mail, isStarred: !mail.isStarred }
+    mailService.save(updated).then(() =>
+      setMails(prev => prev.map(m => (m.id === mail.id ? updated : m)))
+    )
+  }
+
+  function onToggleRead(mail) {
+    const updated = { ...mail, isRead: !mail.isRead }
+    mailService.save(updated).then(() =>
+      setMails(prev => prev.map(m => (m.id === mail.id ? updated : m)))
+    )
+  }
+
+  function onRemoveMail(mailId) {
+    mailService.remove(mailId).then(() =>
+      setMails(prev => prev.filter(m => m.id !== mailId))
+    )
+  }
+
+  function onSend(mailToSend) {
+    const updatedMail = { ...mailToSend, status: 'sent', sentAt: Date.now() }
+
+    mailService.save(updatedMail).then(savedMail => {
       setIsComposing(false)
       setDraftToEdit(null)
-      loadAndSortMails()
+      setFilterBy(prev => ({ ...prev, status: 'sent' }))  // switch to Sent folder, triggers mail refresh
     })
   }
 
-  function onSaveDraft(mail) {
-    mail.status = 'draft'
-    mailService.saveDraft(mail).then(() => {
+  function onSaveDraft(draftMail) {
+    mailService.save(draftMail).then(() => {
       setIsComposing(false)
-      setDraftToEdit(null)
-      loadAndSortMails()
+      setMails(prev => [draftMail, ...prev])
     })
   }
 
-  function onCloseCompose() {
-    setIsComposing(false)
-    setDraftToEdit(null)
-  }
-
-  function onToggleCompose() {
-    setDraftToEdit(null)
-    setIsComposing(prev => !prev)
-  }
+  useEffect(() => {
+    function onClickOutside(event) {
+      if (isSidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setIsSidebarOpen(false)
+      }
+    }
+    window.addEventListener('click', onClickOutside)
+    return () => window.removeEventListener('click', onClickOutside)
+  }, [isSidebarOpen])
 
   return (
     <section className="mail-index">
-      <aside className="mail-sidebar">
+
+      <aside
+        ref={sidebarRef}
+        className={`mail-sidebar ${isSidebarOpen ? 'open' : ''}`}
+      >
         <button className="compose-btn" onClick={onToggleCompose}>
           <span className="material-icons">edit</span> Compose
         </button>
@@ -99,28 +111,35 @@ export function MailIndex() {
       </aside>
 
       <main className="mail-main">
-        <MailFilter
-          filterBy={filterBy}
-          onSetFilter={setFilterBy}
-          sortBy={sortBy}
-          onSetSort={setSortBy}
-        />
+        <div className="mail-filter-wrapper">
+          <MailFilter
+            filterBy={filterBy}
+            onSetFilter={setFilterBy}
+            sortBy={sortBy}
+            onSetSort={setSortBy}
+            onToggleSidebar={toggleSidebar}
+          />
+        </div>
 
         {isComposing && (
           <MailCompose
             mail={draftToEdit}
+            onClose={() => {
+              setIsComposing(false)
+              setDraftToEdit(null)
+            }}
             onSend={onSend}
             onSaveDraft={onSaveDraft}
-            onClose={onCloseCompose}
           />
         )}
 
+
         <MailList
           mails={mails}
+          onMailClick={onMailClick}
           onToggleStarred={onToggleStarred}
           onToggleRead={onToggleRead}
           onRemoveMail={onRemoveMail}
-          onMailClick={onMailClick}
         />
       </main>
     </section>

@@ -1,6 +1,5 @@
 import { storageService } from '../../../services/async-storage.service.js'
 import { utilService } from '../../../services/util.service.js'
-console.log('UTIL SERVICE:', utilService)
 
 export const mailService = {
   query,
@@ -39,7 +38,6 @@ function randomDateWithinLastMonth() {
 }
 
 for (let i = 0; i < 15; i++) {
-  // Pick random folder status
   let status = statuses[utilService.getRandomIntInclusive(0, statuses.length - 1)]
 
   let mail = {
@@ -65,10 +63,9 @@ for (let i = 0; i < 15; i++) {
     mail.sentAt = null
     mail.isRead = true
   } else if (status === 'trash') {
-    // For trash, can be from or to user, mark removedAt
     const fromIsUser = Math.random() > 0.5
     mail.from = fromIsUser ? 'user@appsus.com' : senders[utilService.getRandomIntInclusive(0, senders.length - 1)]
-    mail.removedAt = Date.now() - utilService.getRandomIntInclusive(0, 5) * 24 * 60 * 60 * 1000 // removed recently
+    mail.removedAt = Date.now() - utilService.getRandomIntInclusive(0, 5) * 24 * 60 * 60 * 1000
   }
 
   demoMails.push(mail)
@@ -77,7 +74,6 @@ for (let i = 0; i < 15; i++) {
 function initDemoData() {
   return storageService.query(MAIL_KEY).then(mails => {
     if (mails.length) return mails
-
     _save(MAIL_KEY, demoMails)
     return demoMails
   })
@@ -87,7 +83,7 @@ function _save(entityType, entities) {
   localStorage.setItem(entityType, JSON.stringify(entities))
 }
 
-function query(filterBy = { status: 'inbox', txt: '', isRead: null }) {
+function query(filterBy = { status: 'inbox', txt: '', isRead: null }, sortBy = { field: 'date', direction: 'desc' }) {
   return storageService.query(MAIL_KEY).then(mails => {
     let filteredMails = [...mails]
 
@@ -117,7 +113,6 @@ function query(filterBy = { status: 'inbox', txt: '', isRead: null }) {
         mail => mail.isStarred && !mail.removedAt
       )
     } else {
-      // Default fallback: any non-draft, non-removed mail
       filteredMails = filteredMails.filter(
         mail => !mail.removedAt && mail.status !== 'draft'
       )
@@ -142,10 +137,29 @@ function query(filterBy = { status: 'inbox', txt: '', isRead: null }) {
       )
     }
 
+    // Sort mails
+    filteredMails.sort((a, b) => {
+      let aField = a[sortBy.field === 'date' ? 'sentAt' : sortBy.field]
+      let bField = b[sortBy.field === 'date' ? 'sentAt' : sortBy.field]
+
+      if (sortBy.field === 'date') {
+        aField = aField || 0
+        bField = bField || 0
+      }
+
+      if (sortBy.field === 'title') {
+        aField = (aField || '').toLowerCase()
+        bField = (bField || '').toLowerCase()
+      }
+
+      if (aField < bField) return sortBy.direction === 'asc' ? -1 : 1
+      if (aField > bField) return sortBy.direction === 'asc' ? 1 : -1
+      return 0
+    })
+
     return filteredMails
   })
 }
-
 
 function createMailToSend(to, subject, body) {
   return {
@@ -153,7 +167,7 @@ function createMailToSend(to, subject, body) {
     subject,
     body,
     isRead: false,
-    isStarred: false,      // <- add this
+    isStarred: false,
     sentAt: Date.now(),
     from: loggedinUser.email,
     to,
@@ -165,7 +179,7 @@ function send(mail) {
   mail.status = 'sent'
   mail.sentAt = Date.now()
   if (!mail.id) mail.id = utilService.makeId()
-  return save(mail) 
+  return save(mail)
 }
 
 function get(mailId) {
@@ -176,10 +190,8 @@ function remove(mailId) {
   return get(mailId).then(mail => {
     if (!mail) return Promise.reject('Mail not found')
     if (mail.removedAt) {
-      // Already in trash = permanently delete
       return storageService.remove(MAIL_KEY, mailId)
     } else {
-      // Move to trash
       mail.removedAt = Date.now()
       return save(mail)
     }
@@ -189,10 +201,9 @@ function remove(mailId) {
 function save(mail) {
   if (!mail.id) mail.id = utilService.makeId()
 
-  // Try to update existing mail first
   return storageService.get(MAIL_KEY, mail.id)
-    .then(() => storageService.put(MAIL_KEY, mail))  // If found, update
-    .catch(() => storageService.post(MAIL_KEY, mail)) // If not found, add new
+    .then(() => storageService.put(MAIL_KEY, mail))
+    .catch(() => storageService.post(MAIL_KEY, mail))
 }
 
 function getLoggedinUser() {

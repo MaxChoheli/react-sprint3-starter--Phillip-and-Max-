@@ -1,78 +1,80 @@
 const { useState, useEffect } = React
 
-export function MailFilter({ filterBy, onSetFilter, sortBy, onSetSort }) {
-  const [localFilter, setLocalFilter] = useState(filterBy)
-  const [localSort, setLocalSort] = useState(sortBy)
-
-  useEffect(() => {
-    setLocalFilter(filterBy)
-  }, [filterBy])
-
-  useEffect(() => {
-    setLocalSort(sortBy)
-  }, [sortBy])
-
+export function MailFilter({ filterBy, onSetFilter, sortBy, onSetSort, onToggleSidebar }) {
   function handleFilterChange(ev) {
     const { name, value } = ev.target
     let val = value
+
     if (name === 'isRead') {
       if (value === 'all') val = null
       else if (value === 'read') val = true
       else val = false
     }
-    const newFilter = { ...localFilter, [name]: val }
-    setLocalFilter(newFilter)
-    onSetFilter(newFilter)
+
+    onSetFilter({ ...filterBy, [name]: val })
   }
 
   function handleSortChange(ev) {
     const [field, direction] = ev.target.value.split('-')
-    const newSort = { field, direction }
-    setLocalSort(newSort)
-    onSetSort(newSort)
+    onSetSort({ field, direction })
   }
 
   return (
     <section className="mail-filter">
-      <div className="search-bar">
-        <span className="material-symbols-outlined">search</span>
-        <input
-          type="text"
-          name="txt"
-          placeholder="Search mail"
-          value={localFilter.txt}
-          onChange={handleFilterChange}
-        />
-        <label style={{ marginLeft: '2px', marginRight: '2px', }}>Filter:</label>
-          
-        <select
-          name="isRead"
-          value={
-            localFilter.isRead === null
-              ? 'all'
-              : localFilter.isRead === true
+      <div className="search-wrapper">
+        <button
+          type="button"
+          className="menu-btn"
+          onClick={(ev) => {
+            ev.preventDefault()
+            ev.stopPropagation()
+            console.log('Hamburger menu clicked!')
+            onToggleSidebar()
+          }}
+        >
+          <span className="material-icons">menu</span>
+        </button>
+
+        <div className="search-input-wrapper">
+          <span className="material-symbols-outlined search-icon">search</span>
+          <input
+            type="text"
+            name="txt"
+            placeholder="Search mail"
+            value={filterBy.txt}
+            onChange={handleFilterChange}
+          />
+        </div>
+      </div>
+
+      <label>Filter:</label>
+      <select
+        name="isRead"
+        value={
+          filterBy.isRead === null
+            ? 'all'
+            : filterBy.isRead === true
               ? 'read'
               : 'unread'
-          }
-          onChange={handleFilterChange}
-        >
-          <option value="all">All</option>
-          <option value="read">Read</option>
-          <option value="unread">Unread</option>
-        </select>
+        }
+        onChange={handleFilterChange}
+      >
+        <option value="all">All</option>
+        <option value="read">Read</option>
+        <option value="unread">Unread</option>
+      </select>
 
-        {/* Sorting dropdown here */}
-        <label style={{ marginLeft: '2px', marginRight: '2px', }}>Sort by:</label>
-        <select
-          value={`${localSort.field}-${localSort.direction}`}
-          onChange={handleSortChange}
-        > 
-          <option value="date-desc">Date ↓</option>
-          <option value="date-asc">Date ↑</option>
-          <option value="title-asc">Title A-Z</option>
-          <option value="title-desc">Title Z-A</option>
-        </select>
-      </div>
+      <label>Sort by:</label>
+      <select
+        value={`${sortBy.field}-${sortBy.direction}`}
+        onChange={handleSortChange}
+      >
+        <option value="date-desc">Date ↓</option>
+        <option value="date-asc">Date ↑</option>
+        <option value="title-asc">Title A-Z</option>
+        <option value="title-desc">Title Z-A</option>
+      </select>
     </section>
   )
 }
+

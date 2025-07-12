@@ -176,3 +176,55 @@
   background-color: #e8f0fe;
   color: #1967d2;
 }
+
+@media (max-width: 600px) {
+  .mail-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+    padding-right: 12px;
+    gap: 4px;
+  }
+
+  .mail-left {
+    display: none;
+  }
+
+  .mail-from {
+    font-size: 14px;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .mail-center {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    max-width: 100%;
+  }
+
+  .mail-info {
+    flex-direction: column;
+    align-items: flex-start;
+    white-space: normal;
+    gap: 2px;
+  }
+
+  .mail-subject {
+    font-size: 15px;
+    font-weight: 600;
+    max-width: 100%;
+  }
+
+  .mail-snippet {
+    font-size: 14px;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .mail-right,
+  .mail-sent-at,
+  .mail-actions {
+    display: none;
+  }
+}

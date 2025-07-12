@@ -46,15 +46,28 @@
   color: #202124;
 }
 
-.mail-compose form {
+.compose-body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
-.mail-compose input[type="email"],
-.mail-compose input[type="text"],
-.mail-compose textarea {
+/* Form group for labeled inputs */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #202124;
+}
+
+.form-group input,
+.form-group textarea {
   padding: 10px;
   font-size: 14px;
   border: 1px solid #dadce0;
@@ -64,12 +77,12 @@
   box-sizing: border-box;
 }
 
-.mail-compose input:focus,
-.mail-compose textarea:focus {
+.form-group input:focus,
+.form-group textarea:focus {
   border-color: #1a73e8;
 }
 
-.mail-compose textarea {
+.form-group textarea {
   resize: vertical;
   min-height: 345px;
 }
@@ -77,7 +90,7 @@
 .compose-actions {
   display: flex;
   align-items: center;
-  gap: 8px; 
+  gap: 8px;
 }
 
 .compose-actions button {
@@ -126,4 +139,30 @@
   font-size: 0.85rem;
   padding: 6px 12px;
   cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .mail-compose {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    padding: 1rem;
+    max-width: none;
+  }
+
+  .compose-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .compose-actions button {
+    width: 100%;
+    justify-content: center;
+  }
 }
