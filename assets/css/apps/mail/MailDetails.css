@@ -71,7 +71,6 @@
   white-space: pre-wrap;
 }
 
-/* Mobile responsiveness (sidebar still hidden when collapsed manually) */
 @media (max-width: 600px) {
   .mail-details {
     padding: 1rem;

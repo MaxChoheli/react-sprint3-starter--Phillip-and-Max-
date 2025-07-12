@@ -7,7 +7,6 @@
   /* allow vertical scroll */
 }
 
-/* === Sidebar === */
 .mail-sidebar {
   width: 240px;
   background-color: #f1f3f4;
@@ -42,11 +41,9 @@
   font-size: 1.2em;
 }
 
-/* === Sidebar Hidden on Mobile === */
 @media (max-width: 768px) {
   .mail-sidebar {
     position: fixed;
-    /* Overlay */
     top: 0;
     left: 0;
     height: 100%;
@@ -61,7 +58,6 @@
   }
 }
 
-/* === Main Area === */
 .mail-main {
   flex: 1;
   display: flex;
@@ -71,21 +67,18 @@
   transition: margin-left 0.3s ease;
 }
 
-/* On mobile, remove left margin */
 @media (max-width: 768px) {
   .mail-main {
     margin-left: 0;
   }
 }
 
-/* === Filter Bar === */
 .mail-filter-wrapper {
   padding: 1em;
   border-bottom: 1px solid #ccc;
   background-color: #fff;
 }
 
-/* === Filter Bar Contents === */
 .mail-filter {
   display: flex;
   align-items: center;
@@ -107,7 +100,6 @@
 .search-input-wrapper input {
   width: 100%;
   padding: 10px 12px 10px 48px;
-  /* 👈 Adds left space for the icon */
   border: 1px solid #ccc;
   border-radius: 20px;
   background-color: #f6f8fc;
@@ -130,7 +122,6 @@
   pointer-events: none;
 }
 
-/* Search and Menu */
 .search-wrapper {
   display: flex;
   align-items: center;
@@ -139,7 +130,6 @@
   min-width: 200px;
 }
 
-/* Hamburger button */
 .menu-btn {
   background: none;
   border: none;

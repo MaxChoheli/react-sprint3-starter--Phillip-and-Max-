@@ -1,0 +1,62 @@
+/* About Page Styles */
+.about {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 1rem 2rem;
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+    line-height: 1.6;
+    background-color: #fafafa;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.about h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #1967d2;
+    /* a nice blue */
+    text-align: center;
+}
+
+.about p {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.about ul {
+    list-style: inside disc;
+    margin: 1rem 0 1.5rem 0;
+    padding-left: 0;
+    font-size: 1.1rem;
+    color: #444;
+}
+
+.about ul li {
+    margin-bottom: 0.7rem;
+}
+
+.about ul li strong {
+    color: #1967d2;
+}
+
+.about ul li:hover {
+    cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .about {
+        padding: 1rem;
+        margin: 1rem;
+    }
+
+    .about h1 {
+        font-size: 2rem;
+    }
+
+    .about p,
+    .about ul li {
+        font-size: 1rem;
+    }
+}

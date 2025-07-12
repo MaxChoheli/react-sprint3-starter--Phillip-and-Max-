@@ -4,9 +4,7 @@
   gap: 4px;
   padding: 12px 0;
   width: 100%;
-  /* Full width inside sidebar */
   background-color:  #f1f3f4;
-  /* Remove border-right on mobile to avoid double borders */
   border-right: 1px solid #e0e0e0;
 }
 
@@ -44,7 +42,6 @@
   color: #1a73e8;
 }
 
-/* On mobile, remove border-right and let sidebar handle visibility */
 @media (max-width: 600px) {
   .mail-folder-list {
     border-right: none;

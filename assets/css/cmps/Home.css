@@ -1,33 +1,109 @@
- /* home */
-
+/* Home Page Styles */
 .home {
-    background-color: var(--bg2);
+    position: relative;
+    min-height: 100vh;
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    z-index: 0;
 }
 
-.home .box-container {
-    padding: 1em 0;
+.home::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('https://png.pngtree.com/background/20230411/original/pngtree-building-silhouette-corporate-website-background-picture-image_2390149.jpg');
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.5);
+    z-index: -1;
+    transition: background-image 0.5s ease-in-out;
 }
 
-.home .box1 {
+.home h1 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: #1967d2;
+    text-align: center;
+}
+
+.home button {
+    background-color: #1967d2;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(25, 103, 210, 0.5);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 3rem;
+}
+
+.home button:hover {
+    background-color: #174ea6;
+    box-shadow: 0 4px 12px rgba(23, 78, 166, 0.7);
+}
+
+.box-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 700px;
+}
+
+.box1,
+.box2 {
     background-color: var(--color1);
-    min-height: 10em;
+    color: white;
+    padding: 2.5rem 1.5rem;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    user-select: none;
+    transition: background-color 0.3s ease;
 }
 
-.home .box2 {
+.box2 {
     background-color: var(--color2);
-    min-height: 10em;
 }
 
- @media (min-width: 750px) {
-    .home .box-container {
-        display: flex;
-        flex-direction: row-reverse;
+.box1:hover {
+    background-color: #265ecf;
+    /* Slightly darker blue */
+    box-shadow: 0 6px 16px rgba(38, 94, 207, 0.6);
+}
+
+.box2:hover {
+    background-color: #0ca243;
+    /* Slightly darker red */
+    box-shadow: 0 6px 16px rgba(209, 87, 88, 0.6);
+}
+
+/* Desktop layout */
+@media (min-width: 750px) {
+    .box-container {
+        flex-direction: row;
+        justify-content: center;
     }
-    .home .box1 {
-        flex: 1
+
+    .box1 {
+        flex: 1;
+        margin-left: 1rem;
     }
-    .home .box2 {
-        width: 30vw;
+
+    .box2 {
+        flex: 0 0 30vw;
+        margin-right: 1rem;
     }
-    
 }
