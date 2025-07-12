@@ -22,10 +22,12 @@ export function MailIndex() {
   const navigate = useNavigate()
   const [draftToEdit, setDraftToEdit] = useState(null)
 
-
   useEffect(() => {
-    mailService.query(filterBy, sortBy).then(setMails)
+    mailService.initDemoData().then(() => {
+      mailService.query(filterBy, sortBy).then(setMails)
+    })
   }, [filterBy, sortBy])
+
 
   function toggleSidebar() {
     console.log('Hamburger clicked, toggling sidebar')
@@ -49,7 +51,6 @@ export function MailIndex() {
       navigate(`/mail/${mail.id}`, { state: { folder: filterBy.status } })
     }
   }
-
 
   function onToggleStarred(mail) {
     const updated = { ...mail, isStarred: !mail.isStarred }
