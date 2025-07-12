@@ -258,6 +258,7 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                 />
 
                 <h4 style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>{note.info.title}</h4>
+
                 {Array.isArray(note.info.txt) ? (
                     <ul className="note-checklist">
                         {note.info.txt.map((item, idx) => (

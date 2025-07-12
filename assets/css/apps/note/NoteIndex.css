@@ -127,3 +127,7 @@
     gap: 8px;
     margin-top: 6px;
 }
+
+.material-symbols-outlined {
+    cursor: pointer;
+}

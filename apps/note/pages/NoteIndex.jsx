@@ -264,17 +264,12 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
                                 </select>
                             )}
 
-                            <span
-                                className="material-symbols-outlined"
-                                onClick={() => setIsList(prev => !prev)}
-                                title="Toggle checklist"
-                            >
-                                check_box
-                            </span>
-
                             <button
                                 type="button"
-                                onClick={() => setNewTxt([{ text: '', done: false }])}
+                                onClick={() => {
+                                    setIsList(true)
+                                    setNewTxt([{ text: '', done: false }])
+                                }}
                                 className="note-action"
                                 title="Make List"
                                 style={{
@@ -300,10 +295,14 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
                                             style={{
                                                 backgroundColor: color,
                                                 border: newColor === color ? '2px solid black' : '1px solid #ccc',
-                                                width: '22px',
-                                                height: '22px',
-                                                borderRadius: '50%'
+                                                width: '24px',
+                                                height: '24px',
+                                                borderRadius: '50%',
+                                                padding: 0,
+                                                display: 'inline-block',
+                                                appearance: 'none'
                                             }}
+
                                         />
                                     ))}
                                 </div>
