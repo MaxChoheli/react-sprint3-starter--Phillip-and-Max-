@@ -118,14 +118,18 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
     function onUpdateNote(noteId, newText, newBgColor = null, newStyle = null, newTitle = null, newLabel = null, newIsPinned = null, newImgUrl = null) {
         const note = notes.find(note => note.id === noteId)
         if (!note) return
+
+        const updatedInfo = {
+            txt: newText,
+            title: newTitle !== null ? newTitle : note.info.title,
+            label: newLabel !== null ? newLabel : note.info.label || '',
+            imgUrl: note.type === 'NoteVideo' ? '' : (newImgUrl !== null ? newImgUrl : note.info.imgUrl || ''),
+            videoUrl: note.type === 'NoteVideo' ? (newImgUrl !== null ? newImgUrl : note.info.videoUrl || '') : ''
+        }
+
         const updatedNote = {
             ...note,
-            info: {
-                txt: newText,
-                title: newTitle !== null ? newTitle : note.info.title,
-                label: newLabel !== null ? newLabel : (note.info.label || ''),
-                imgUrl: newImgUrl !== null ? newImgUrl : (note.info.imgUrl || '')
-            },
+            info: updatedInfo,
             style: {
                 backgroundColor: (newStyle && newStyle.backgroundColor) || (note.style && note.style.backgroundColor) || '#ffffff',
                 color: (newStyle && newStyle.color) || (note.style && note.style.color) || '#000000',
@@ -134,8 +138,10 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
             },
             isPinned: newIsPinned !== null ? newIsPinned : note.isPinned || false
         }
+
         noteService.save(updatedNote).then(loadNotes)
     }
+
 
     function onDuplicateNote(noteToCopy) {
         const newNote = {
@@ -263,6 +269,51 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
                                     <option value="romantic">Romantic</option>
                                 </select>
                             )}
+
+                            <span
+                                className="material-symbols-outlined note-action"
+                                onClick={() => {
+                                    const rawUrl = prompt('Enter YouTube video URL:')
+                                    if (!rawUrl) return
+
+                                    function convertToEmbedUrl(url) {
+                                        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^?&/]+)/)
+                                        return match ? `https://www.youtube.com/embed/${match[1]}` : null
+                                    }
+
+                                    const embedUrl = convertToEmbedUrl(rawUrl)
+                                    if (!embedUrl) {
+                                        alert('Invalid YouTube URL')
+                                        return
+                                    }
+
+                                    const newNote = {
+                                        type: 'NoteVideo',
+                                        info: {
+                                            title: '',
+                                            txt: '',
+                                            label: '',
+                                            videoUrl: embedUrl
+                                        },
+                                        style: {
+                                            backgroundColor: newColor,
+                                            color: '#000000',
+                                            left: 0,
+                                            top: 0
+                                        },
+                                        isPinned: false,
+                                        createdAt: Date.now()
+                                    }
+
+                                    noteService.save(newNote).then(() => {
+                                        loadNotes()
+                                    })
+                                }}
+                                title="Add Video"
+                                style={{ cursor: 'pointer' }}
+                            >
+                                animated_images
+                            </span>
 
                             <button
                                 type="button"

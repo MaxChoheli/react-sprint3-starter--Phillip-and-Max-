@@ -123,11 +123,17 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
 
     function closeModal() {
         setIsModalOpen(false)
+
         const updatedStyle = {
             backgroundColor: bgColor,
             color: '#000000'
         }
-        onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned, imageUrl)
+
+        const mediaUrl =
+            note.type === 'NoteVideo' ? note.info.videoUrl :
+                imageUrl || note.info.imgUrl || ''
+
+        onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned, mediaUrl)
     }
 
     function handleLabelChange(value) {
@@ -148,7 +154,8 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                 backgroundColor: color,
                 color: '#000000'
             }
-            onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned, imageUrl)
+            const finalImgUrl = note.type === 'NoteVideo' ? note.info.videoUrl : imageUrl
+            onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned, finalImgUrl)
         }
     }
 
@@ -221,9 +228,9 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                     </button>
                 </div>
 
-                {imageUrl && (
+                {note.type !== 'NoteVideo' && (imageUrl || note.info.imgUrl) && (
                     <img
-                        src={imageUrl}
+                        src={imageUrl || note.info.imgUrl}
                         alt="Note"
                         style={{
                             width: '100%',
@@ -258,8 +265,18 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                 />
 
                 <h4 style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>{note.info.title}</h4>
+                {note.type === 'NoteVideo' && note.info.videoUrl ? (
+                    <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px', marginBottom: '0.5rem' }}>
+                        <iframe
+                            src={note.info.videoUrl}
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                        ></iframe>
+                    </div>
 
-                {Array.isArray(note.info.txt) ? (
+                ) : Array.isArray(note.info.txt) ? (
                     <ul className="note-checklist">
                         {note.info.txt.map((item, idx) => (
                             <li key={idx} style={{ display: 'flex', alignItems: 'center' }}>
@@ -273,6 +290,7 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                 ) : (
                     <p>{note.info.txt}</p>
                 )}
+
                 {note.info.label && <p className="note-label">#{note.info.label}</p>}
 
                 <div className="note-actions note-action" style={{ position: 'absolute', bottom: '36px', left: '6px', display: 'none' }}>
@@ -389,19 +407,24 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                         >
                             <span className="material-symbols-outlined">{pinned ? 'push_pin' : 'push_pin'}</span>
                         </button>
-                        {imageUrl && (
+                        {note.type === 'NoteVideo' && note.info.videoUrl ? (
+                            <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px', marginBottom: '1rem' }}>
+                                <iframe
+                                    src={note.info.videoUrl}
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                                ></iframe>
+                            </div>
+                        ) : imageUrl && (
                             <img
                                 src={imageUrl}
                                 alt="Note"
-                                style={{
-                                    width: '100%',
-                                    maxHeight: '250px',
-                                    objectFit: 'contain',
-                                    borderRadius: '8px',
-                                    marginBottom: '1rem'
-                                }}
+                                style={{ width: '100%', maxHeight: '250px', objectFit: 'contain', borderRadius: '8px', marginBottom: '1rem' }}
                             />
                         )}
+
 
                         <input
                             type="file"
