@@ -54,6 +54,7 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
     const [showLabelPicker, setShowLabelPicker] = React.useState(false)
     const [imageUrl, setImageUrl] = React.useState(note.info.imgUrl || '')
     const fileInputRef = React.useRef()
+    const modalTextareaRef = React.useRef()
 
 
     const colorOptions = ['#faafa8', '#f39f76', '#fff8b8', '#e2f6d3', '#b4ddd3', '#d4e4ed', '#aeccdc', '#d3bfdb', '#f6e2dd', '#e9e3d4', '#efeff1']
@@ -78,6 +79,14 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
         document.addEventListener('mousedown', handleClickOutside)
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [isModalOpen])
+
+    React.useEffect(() => {
+        if (isModalOpen && modalTextareaRef.current) {
+            const el = modalTextareaRef.current
+            el.style.height = 'auto'
+            el.style.height = el.scrollHeight + 'px'
+        }
+    }, [isModalOpen, txt])
 
     function handleEditTxtResize(ev) {
         const el = ev.target
@@ -249,7 +258,20 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                 />
 
                 <h4 style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>{note.info.title}</h4>
-                <p>{note.info.txt}</p>
+                {Array.isArray(note.info.txt) ? (
+                    <ul className="note-checklist">
+                        {note.info.txt.map((item, idx) => (
+                            <li key={idx} style={{ display: 'flex', alignItems: 'center' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '20px', marginRight: '0.5rem' }}>
+                                    {item.done ? 'check_box' : 'check_box_outline_blank'}
+                                </span>
+                                <span style={{ textDecoration: item.done ? 'line-through' : 'none' }}>{item.text}</span>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p>{note.info.txt}</p>
+                )}
                 {note.info.label && <p className="note-label">#{note.info.label}</p>}
 
                 <div className="note-actions note-action" style={{ position: 'absolute', bottom: '36px', left: '6px', display: 'none' }}>
@@ -447,24 +469,70 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                             }}
                         />
 
-                        <textarea
-                            value={txt}
-                            onChange={handleEditTxtResize}
-                            onInput={handleEditTxtResize}
-                            style={{
-                                resize: 'none',
-                                width: '100%',
-                                minWidth: '200px',
-                                maxWidth: '400px',
-                                height: 'auto',
-                                overflow: 'hidden',
-                                fontSize: '1rem',
-                                lineHeight: '1.4',
-                                border: 'none',
-                                background: 'transparent',
-                                outline: 'none'
-                            }}
-                        />
+
+
+                        {Array.isArray(txt) ? (
+                            <ul className="modal-checklist" style={{ padding: 0, listStyle: 'none' }}>
+                                {txt.map((item, idx) => (
+                                    <li key={idx} style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={item.done}
+                                            onChange={() => {
+                                                const updated = [...txt]
+                                                updated[idx].done = !updated[idx].done
+                                                setTxt(updated)
+                                            }}
+                                            style={{ marginRight: '0.5rem' }}
+                                        />
+                                        <input
+                                            type="text"
+                                            value={item.text}
+                                            onChange={(ev) => {
+                                                const updated = [...txt]
+                                                updated[idx].text = ev.target.value
+                                                setTxt(updated)
+                                            }}
+                                            onKeyDown={(ev) => {
+                                                if (ev.key === 'Enter') {
+                                                    ev.preventDefault()
+                                                    const updated = [...txt]
+                                                    updated.splice(idx + 1, 0, { text: '', done: false })
+                                                    setTxt(updated)
+                                                }
+                                            }}
+                                            style={{
+                                                flex: 1,
+                                                background: 'transparent',
+                                                border: 'none',
+                                                outline: 'none',
+                                                fontSize: '1rem'
+                                            }}
+                                        />
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <textarea
+                                ref={modalTextareaRef}
+                                value={txt}
+                                onChange={handleEditTxtResize}
+                                onInput={handleEditTxtResize}
+                                style={{
+                                    resize: 'none',
+                                    width: '100%',
+                                    minWidth: '200px',
+                                    maxWidth: '400px',
+                                    height: 'auto',
+                                    overflow: 'hidden',
+                                    fontSize: '1rem',
+                                    lineHeight: '1.4',
+                                    border: 'none',
+                                    background: 'transparent',
+                                    outline: 'none'
+                                }}
+                            />
+                        )}
 
                         <div style={{ display: 'flex', gap: '6px', marginTop: '12px', flexWrap: 'wrap' }}>
                             <button

@@ -6,7 +6,7 @@ const { useState, useEffect, useRef } = React
 
 export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
     const [notes, setNotes] = useState([])
-    const [newTxt, setNewTxt] = useState('')
+    const [newTxt, setNewTxt] = useState([])
     const [newTitle, setNewTitle] = useState('')
     const [newLabel, setNewLabel] = useState('')
     const [newColor, setNewColor] = useState('#ffffff')
@@ -14,6 +14,7 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
     const [isExpanded, setIsExpanded] = useState(false)
     const [showLabels, setShowLabels] = useState(false)
     const [showColors, setShowColors] = useState(false)
+    const [isList, setIsList] = useState(false)
 
     const formRef = useRef()
     const fileInputRef = useRef()
@@ -31,7 +32,7 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
         if (title || txt) {
             const newNote = {
                 type: 'NoteTxt',
-                info: { title: title || '', txt: txt || '', label: label || '', imgUrl: '' },
+                info: { title: title || '', txt: [{ text: txt || '', done: false }], label: label || '', imgUrl: '' },
                 style: {
                     backgroundColor: '#fff',
                     color: '#000',
@@ -56,7 +57,7 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
                 isExpanded &&
                 formRef.current &&
                 !formRef.current.contains(ev.target) &&
-                !newTxt.trim() &&
+                newTxt.length === 0 &&
                 !newTitle.trim()
             ) {
                 setIsExpanded(false)
@@ -80,7 +81,7 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
                 type: 'NoteTxt',
                 info: {
                     title: newTitle,
-                    txt: newTxt,
+                    txt: isList ? newTxt : (newTxt.length > 0 ? newTxt[0].text : ''),
                     label: newLabel,
                     imgUrl: imageFile ? reader.result : ''
                 },
@@ -95,18 +96,14 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
             }
 
             noteService.save(newNote).then(() => {
-                setNewTxt('')
+                setNewTxt([])
                 setNewTitle('')
                 setNewLabel('')
                 setNewColor('#ffffff')
                 setImageFile(null)
                 setIsExpanded(false)
-                const txtArea = document.querySelector('.note-form textarea')
-                if (txtArea) {
-                    txtArea.style.height = 'auto'
-                    txtArea.style.width = 'auto'
-                }
                 loadNotes()
+                setIsList(false)
             })
         }
 
@@ -145,7 +142,7 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
             type: 'NoteTxt',
             info: {
                 title: noteToCopy.info.title || '',
-                txt: noteToCopy.info.txt || '',
+                txt: noteToCopy.info.txt || [],
                 label: noteToCopy.info.label || '',
                 imgUrl: noteToCopy.info.imgUrl || ''
             },
@@ -161,24 +158,35 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
         noteService.save(newNote).then(loadNotes)
     }
 
-    function handleAutoResize(ev) {
-        const el = ev.target
-        const softBreakTxt = el.value.replace(/(\S{30})/g, '$1\u200B')
-        setNewTxt(softBreakTxt)
-        el.style.height = 'auto'
-        el.style.height = el.scrollHeight + 'px'
-        el.style.width = 'auto'
-        el.style.width = el.scrollWidth < 400 ? el.scrollWidth + 'px' : '400px'
+    function onTxtChange(idx, value) {
+        const updated = [...newTxt]
+        updated[idx].text = value
+        setNewTxt(updated)
+    }
+
+    function onTxtToggle(idx) {
+        const updated = [...newTxt]
+        updated[idx].done = !updated[idx].done
+        setNewTxt(updated)
+    }
+
+    function onKeyDown(ev, idx) {
+        if (ev.key === 'Enter') {
+            ev.preventDefault()
+            const updated = [...newTxt]
+            updated.splice(idx + 1, 0, { text: '', done: false })
+            setNewTxt(updated)
+        }
     }
 
     const filteredNotes = notes.filter(note => {
         const title = (note.info.title || '').toLowerCase()
-        const txt = (note.info.txt || '').toLowerCase()
         const label = note.info.label || ''
         const type = note.type || ''
+        const txt = Array.isArray(note.info.txt) ? note.info.txt.map(line => line.text).join(' ') : note.info.txt || ''
         return (
             (title.includes(filterByTxt.toLowerCase()) ||
-                txt.includes(filterByTxt.toLowerCase())) &&
+                txt.toLowerCase().includes(filterByTxt.toLowerCase())) &&
             (filterByType === '' || type === filterByType) &&
             (filterByLabel === '' || label === filterByLabel)
         )
@@ -199,12 +207,33 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
                             onChange={(ev) => setNewTitle(ev.target.value)}
                         />
                     )}
-                    <textarea
-                        placeholder="Take a note..."
-                        value={newTxt}
-                        onFocus={() => setIsExpanded(true)}
-                        onChange={handleAutoResize}
-                    />
+                    {isList ? (
+                        newTxt.map((line, idx) => (
+                            <div key={idx} style={{ display: 'flex', alignItems: 'center' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={line.done}
+                                    onChange={() => onTxtToggle(idx)}
+                                />
+                                <input
+                                    type="text"
+                                    value={line.text}
+                                    onChange={(ev) => onTxtChange(idx, ev.target.value)}
+                                    onKeyDown={(ev) => onKeyDown(ev, idx)}
+                                    onFocus={() => setIsExpanded(true)}
+                                    style={{ flex: 1, marginLeft: '0.5rem' }}
+                                />
+                            </div>
+                        ))
+                    ) : (
+                        <textarea
+                            placeholder="Take a note..."
+                            value={newTxt.length > 0 ? newTxt[0].text : ''}
+                            onFocus={() => setIsExpanded(true)}
+                            onChange={(ev) => setNewTxt([{ text: ev.target.value, done: false }])}
+                        />
+                    )}
+
                     {imageFile && (
                         <img
                             src={URL.createObjectURL(imageFile)}
@@ -221,13 +250,7 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
 
                     {isExpanded && (
                         <div className="note-options">
-                            <span
-                                className="material-symbols-outlined"
-                                onClick={() => setShowLabels(prev => !prev)}
-                                style={{ cursor: 'pointer', borderRadius: '50%', padding: '4px', backgroundColor: 'transparent' }}
-                            >
-                                label
-                            </span>
+                            <span className="material-symbols-outlined" onClick={() => setShowLabels(prev => !prev)}>label</span>
                             {showLabels && (
                                 <select value={newLabel} onChange={(ev) => setNewLabel(ev.target.value)}>
                                     <option value="">Label</option>
@@ -243,11 +266,30 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
 
                             <span
                                 className="material-symbols-outlined"
-                                onClick={() => setShowColors(prev => !prev)}
-                                style={{ cursor: 'pointer', borderRadius: '50%', padding: '4px', backgroundColor: 'transparent' }}
+                                onClick={() => setIsList(prev => !prev)}
+                                title="Toggle checklist"
                             >
-                                palette
+                                check_box
                             </span>
+
+                            <button
+                                type="button"
+                                onClick={() => setNewTxt([{ text: '', done: false }])}
+                                className="note-action"
+                                title="Make List"
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '1rem',
+                                    padding: '4px',
+                                    outline: 'none'
+                                }}
+                            >
+                                <span className="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+
+                            <span className="material-symbols-outlined" onClick={() => setShowColors(prev => !prev)}>palette</span>
                             {showColors && (
                                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
                                     {["#faafa8", "#f39f76", "#fff8b8", "#e2f6d3", "#b4ddd3", "#d4e4ed", "#aeccdc", "#d3bfdb", "#f6e2dd", "#e9e3d4", "#efeff1"].map(color => (
@@ -260,23 +302,13 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
                                                 border: newColor === color ? '2px solid black' : '1px solid #ccc',
                                                 width: '22px',
                                                 height: '22px',
-                                                borderRadius: '50%',
-                                                cursor: 'pointer',
-                                                padding: 0
+                                                borderRadius: '50%'
                                             }}
-                                            title={color}
                                         />
                                     ))}
                                 </div>
                             )}
-
-                            <span
-                                className="material-symbols-outlined"
-                                onClick={() => fileInputRef.current.click()}
-                                style={{ cursor: 'pointer', borderRadius: '50%', padding: '4px', backgroundColor: 'transparent' }}
-                            >
-                                photo
-                            </span>
+                            <span className="material-symbols-outlined" onClick={() => fileInputRef.current.click()}>photo</span>
                             <input
                                 type="file"
                                 accept="image/*"
@@ -284,8 +316,7 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
                                 ref={fileInputRef}
                                 onChange={(e) => setImageFile(e.target.files[0])}
                             />
-
-                            {newTxt.trim() && <button>Add</button>}
+                            {newTxt.length > 0 && <button>Add</button>}
                         </div>
                     )}
                 </div>
@@ -294,9 +325,7 @@ export function NoteIndex({ filterByTxt, filterByType, filterByLabel }) {
             {pinnedNotes.length > 0 && (
                 <section style={{ marginTop: '1em' }}>
                     <h2 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1.1em' }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-                            push_pin
-                        </span>
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>push_pin</span>
                         Pinned
                     </h2>
                     <NoteList notes={pinnedNotes} onDelete={onDeleteNote} onUpdate={onUpdateNote} onDuplicate={onDuplicateNote} />
