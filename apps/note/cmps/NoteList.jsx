@@ -52,6 +52,10 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
     const [pinned, setPinned] = React.useState(note.isPinned || false)
     const [showColorPicker, setShowColorPicker] = React.useState(false)
     const [showLabelPicker, setShowLabelPicker] = React.useState(false)
+    const [imageUrl, setImageUrl] = React.useState(note.info.imgUrl || '')
+    const fileInputRef = React.useRef()
+    const modalTextareaRef = React.useRef()
+
 
     const colorOptions = ['#faafa8', '#f39f76', '#fff8b8', '#e2f6d3', '#b4ddd3', '#d4e4ed', '#aeccdc', '#d3bfdb', '#f6e2dd', '#e9e3d4', '#efeff1']
 
@@ -76,6 +80,14 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [isModalOpen])
 
+    React.useEffect(() => {
+        if (isModalOpen && modalTextareaRef.current) {
+            const el = modalTextareaRef.current
+            el.style.height = 'auto'
+            el.style.height = el.scrollHeight + 'px'
+        }
+    }, [isModalOpen, txt])
+
     function handleEditTxtResize(ev) {
         const el = ev.target
         const softBreakTxt = el.value.replace(/(\S{30})/g, '$1\u200B')
@@ -86,6 +98,24 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
         el.style.width = el.scrollWidth < 400 ? el.scrollWidth + 'px' : '400px'
     }
 
+    function handleMouseEnter() {
+        const el = noteRef.current
+        if (!el) return
+        const actions = el.querySelector('.note-actions')
+        const pin = el.querySelector('.note-pin')
+        if (actions) actions.style.display = 'flex'
+        if (pin) pin.style.display = 'block'
+    }
+
+    function handleMouseLeave() {
+        const el = noteRef.current
+        if (!el) return
+        const actions = el.querySelector('.note-actions')
+        const pin = el.querySelector('.note-pin')
+        if (actions) actions.style.display = 'none'
+        if (pin) pin.style.display = 'none'
+    }
+
     function openModal(ev) {
         if (ev.target.closest('.note-action')) return
         setIsModalOpen(true)
@@ -93,11 +123,17 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
 
     function closeModal() {
         setIsModalOpen(false)
+
         const updatedStyle = {
             backgroundColor: bgColor,
             color: '#000000'
         }
-        onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned)
+
+        const mediaUrl =
+            note.type === 'NoteVideo' ? note.info.videoUrl :
+                imageUrl || note.info.imgUrl || ''
+
+        onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned, mediaUrl)
     }
 
     function handleLabelChange(value) {
@@ -107,7 +143,7 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                 backgroundColor: bgColor,
                 color: '#000000'
             }
-            onUpdate(note.id, txt, bgColor, updatedStyle, title, value, pinned)
+            onUpdate(note.id, txt, bgColor, updatedStyle, title, value, pinned, imageUrl)
         }
     }
 
@@ -118,7 +154,8 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                 backgroundColor: color,
                 color: '#000000'
             }
-            onUpdate(note.id, txt, color, updatedStyle, title, label, pinned)
+            const finalImgUrl = note.type === 'NoteVideo' ? note.info.videoUrl : imageUrl
+            onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned, finalImgUrl)
         }
     }
 
@@ -131,7 +168,8 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                 backgroundColor: bgColor,
                 color: '#000000'
             }
-            onUpdate(note.id, txt, bgColor, updatedStyle, title, label, newPinned)
+            onUpdate(note.id, txt, bgColor, updatedStyle, title, label, newPinned, imageUrl)
+
         }
     }
 
@@ -158,40 +196,101 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                     position: 'relative',
                     paddingBottom: '144px'
                 }}
-                onMouseEnter={() => noteRef.current.querySelector('.note-actions').style.display = 'flex'}
-                onMouseLeave={() => noteRef.current.querySelector('.note-actions').style.display = 'none'}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+
             >
-                <button
-                    onClick={togglePin}
-                    className="note-action"
+                <div
+                    className="note-pin note-action"
                     style={{
                         position: 'absolute',
                         top: '2px',
                         right: '2px',
-                        padding: '2px',
-                        fontSize: '16px',
-                        border: 'none',
-                        background: 'none',
-                        boxShadow: 'none',
-                        outline: 'none',
-                        cursor: 'pointer'
+                        display: 'none',
+                        zIndex: 2
                     }}
-                    title="Pin note"
                 >
-                    <span className="material-symbols-outlined">{pinned ? 'push_pin' : 'push_pin'}</span>
-                </button>
+                    <button
+                        onClick={togglePin}
+                        className="note-action"
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            borderRadius: '50%',
+                            cursor: 'pointer',
+                            padding: '4px',
+                            boxShadow: 'none',
+                            outline: 'none'
+                        }}
+                        title="Pin note"
+                    >
+                        <span className="material-symbols-outlined">{pinned ? 'push_pin' : 'push_pin'}</span>
+                    </button>
+                </div>
 
-                <button
-                    className="note-action"
-                    onClick={(ev) => { ev.stopPropagation(); onDuplicate(note) }}
-                    style={iconBtnStyle}
-                    title="Duplicate"
-                >
-                    <span className="material-symbols-outlined">content_copy</span>
-                </button>
+                {note.type !== 'NoteVideo' && (imageUrl || note.info.imgUrl) && (
+                    <img
+                        src={imageUrl || note.info.imgUrl}
+                        alt="Note"
+                        style={{
+                            width: '100%',
+                            maxHeight: '200px',
+                            objectFit: 'contain',
+                            borderRadius: '8px',
+                            marginBottom: '0.5rem'
+                        }}
+                    />
+                )}
+
+                <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={(ev) => {
+                        const file = ev.target.files[0]
+                        if (!file) return
+                        const reader = new FileReader()
+                        reader.onload = () => {
+                            const base64 = reader.result
+                            setImageUrl(base64)
+                            const updatedStyle = {
+                                backgroundColor: bgColor,
+                                color: '#000000'
+                            }
+                            onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned, base64)
+                        }
+                        reader.readAsDataURL(file)
+                    }}
+                />
 
                 <h4 style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>{note.info.title}</h4>
-                <p>{note.info.txt}</p>
+                {note.type === 'NoteVideo' && note.info.videoUrl ? (
+                    <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px', marginBottom: '0.5rem' }}>
+                        <iframe
+                            src={note.info.videoUrl}
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                        ></iframe>
+                    </div>
+
+                ) : Array.isArray(note.info.txt) ? (
+                    <ul className="note-checklist">
+                        {note.info.txt.map((item, idx) => (
+                            <li key={idx} style={{ display: 'flex', alignItems: 'center' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '20px', marginRight: '0.5rem' }}>
+                                    {item.done ? 'check_box' : 'check_box_outline_blank'}
+                                </span>
+                                <span style={{ textDecoration: item.done ? 'line-through' : 'none' }}>{item.text}</span>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p>{note.info.txt}</p>
+                )}
+
                 {note.info.label && <p className="note-label">#{note.info.label}</p>}
 
                 <div className="note-actions note-action" style={{ position: 'absolute', bottom: '36px', left: '6px', display: 'none' }}>
@@ -204,7 +303,14 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                     <button className="note-action" onClick={(ev) => { ev.stopPropagation(); setShowColorPicker(prev => !prev); setShowLabelPicker(false) }} style={iconBtnStyle}>
                         <span className="material-symbols-outlined">palette</span>
                     </button>
+                    <button className="note-action" onClick={(ev) => { ev.stopPropagation(); fileInputRef.current.click() }} style={iconBtnStyle}>
+                        <span className="material-symbols-outlined">photo</span>
+                    </button>
+                    <button className="note-action" onClick={(ev) => { ev.stopPropagation(); onDuplicate(note) }} style={iconBtnStyle}>
+                        <span className="material-symbols-outlined">content_copy</span>
+                    </button>
                 </div>
+
 
                 {!isModalOpen && (showColorPicker || showLabelPicker) && (
                     <div style={{ position: 'absolute', bottom: '100px', left: '6px' }}>
@@ -301,6 +407,46 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                         >
                             <span className="material-symbols-outlined">{pinned ? 'push_pin' : 'push_pin'}</span>
                         </button>
+                        {note.type === 'NoteVideo' && note.info.videoUrl ? (
+                            <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px', marginBottom: '1rem' }}>
+                                <iframe
+                                    src={note.info.videoUrl}
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                                ></iframe>
+                            </div>
+                        ) : imageUrl && (
+                            <img
+                                src={imageUrl}
+                                alt="Note"
+                                style={{ width: '100%', maxHeight: '250px', objectFit: 'contain', borderRadius: '8px', marginBottom: '1rem' }}
+                            />
+                        )}
+
+
+                        <input
+                            type="file"
+                            accept="image/*"
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
+                            onChange={(ev) => {
+                                const file = ev.target.files[0]
+                                if (!file) return
+                                const reader = new FileReader()
+                                reader.onload = () => {
+                                    const base64 = reader.result
+                                    setImageUrl(base64)
+                                    const updatedStyle = {
+                                        backgroundColor: bgColor,
+                                        color: '#000000'
+                                    }
+                                    onUpdate(note.id, txt, bgColor, updatedStyle, title, label, pinned, base64)
+                                }
+                                reader.readAsDataURL(file)
+                            }}
+                        />
 
                         <div style={{
                             position: 'absolute',
@@ -325,8 +471,6 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                             </button>
                         </div>
 
-
-
                         <textarea
                             value={title}
                             placeholder="Title"
@@ -349,24 +493,70 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                             }}
                         />
 
-                        <textarea
-                            value={txt}
-                            onChange={handleEditTxtResize}
-                            onInput={handleEditTxtResize}
-                            style={{
-                                resize: 'none',
-                                width: '100%',
-                                minWidth: '200px',
-                                maxWidth: '400px',
-                                height: 'auto',
-                                overflow: 'hidden',
-                                fontSize: '1rem',
-                                lineHeight: '1.4',
-                                border: 'none',
-                                background: 'transparent',
-                                outline: 'none'
-                            }}
-                        />
+
+
+                        {Array.isArray(txt) ? (
+                            <ul className="modal-checklist" style={{ padding: 0, listStyle: 'none' }}>
+                                {txt.map((item, idx) => (
+                                    <li key={idx} style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={item.done}
+                                            onChange={() => {
+                                                const updated = [...txt]
+                                                updated[idx].done = !updated[idx].done
+                                                setTxt(updated)
+                                            }}
+                                            style={{ marginRight: '0.5rem' }}
+                                        />
+                                        <input
+                                            type="text"
+                                            value={item.text}
+                                            onChange={(ev) => {
+                                                const updated = [...txt]
+                                                updated[idx].text = ev.target.value
+                                                setTxt(updated)
+                                            }}
+                                            onKeyDown={(ev) => {
+                                                if (ev.key === 'Enter') {
+                                                    ev.preventDefault()
+                                                    const updated = [...txt]
+                                                    updated.splice(idx + 1, 0, { text: '', done: false })
+                                                    setTxt(updated)
+                                                }
+                                            }}
+                                            style={{
+                                                flex: 1,
+                                                background: 'transparent',
+                                                border: 'none',
+                                                outline: 'none',
+                                                fontSize: '1rem'
+                                            }}
+                                        />
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <textarea
+                                ref={modalTextareaRef}
+                                value={txt}
+                                onChange={handleEditTxtResize}
+                                onInput={handleEditTxtResize}
+                                style={{
+                                    resize: 'none',
+                                    width: '100%',
+                                    minWidth: '200px',
+                                    maxWidth: '400px',
+                                    height: 'auto',
+                                    overflow: 'hidden',
+                                    fontSize: '1rem',
+                                    lineHeight: '1.4',
+                                    border: 'none',
+                                    background: 'transparent',
+                                    outline: 'none'
+                                }}
+                            />
+                        )}
 
                         <div style={{ display: 'flex', gap: '6px', marginTop: '12px', flexWrap: 'wrap' }}>
                             <button
@@ -397,6 +587,26 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                                 title="Delete"
                             >
                                 <span className="material-symbols-outlined">delete</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current.click()}
+                                style={iconBtnStyle}
+                                className="note-action"
+                                title="Add Image"
+                            >
+                                <span className="material-symbols-outlined">photo</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => onDuplicate(note)}
+                                style={iconBtnStyle}
+                                className="note-action"
+                                title="Duplicate"
+                            >
+                                <span className="material-symbols-outlined">content_copy</span>
                             </button>
 
                             {showLabelPicker && (
@@ -436,6 +646,7 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                                 </div>
                             )}
                         </div>
+
                     </div>
                 </div>
             )}
