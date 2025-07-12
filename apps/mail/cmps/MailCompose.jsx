@@ -14,11 +14,13 @@ export function MailCompose({ mail, onClose, onSend, onSaveDraft }) {
       setSubject(mail.subject || '')
       setBody(mail.body || '')
     } else {
+      const params = new URLSearchParams(window.location.hash.split('?')[1])
       setTo('')
-      setSubject('')
-      setBody('')
+      setSubject(params.get('subject') || '')
+      setBody(params.get('body') || '')
     }
   }, [mail])
+
 
   function handleSend() {
     const mailToSend = {
