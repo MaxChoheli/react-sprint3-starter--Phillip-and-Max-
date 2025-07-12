@@ -21,6 +21,11 @@ export function MailIndex() {
   const navigate = useNavigate()
   const [draftToEdit, setDraftToEdit] = useState(null)
 
+  useEffect(() => {
+    mailService.initDemoData().then(() => {
+      mailService.query(filterBy, sortBy).then(setMails)
+    })
+  }, [])
 
   useEffect(() => {
     mailService.query(filterBy, sortBy).then(setMails)
