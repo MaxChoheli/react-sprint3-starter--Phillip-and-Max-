@@ -14,6 +14,7 @@ export function MailIndex() {
   const [isComposing, setIsComposing] = useState(false)
   const location = useLocation()
   const queryParams = new URLSearchParams(location.search)
+  const isComposeRoute = location.pathname === '/mail/compose'
   const initialStatus = queryParams.get('status') || 'inbox'
   const [filterBy, setFilterBy] = useState({ txt: '', isRead: null, status: initialStatus })
   const [sortBy, setSortBy] = useState({ field: 'date', direction: 'desc' })
@@ -76,7 +77,7 @@ export function MailIndex() {
     mailService.save(updatedMail).then(savedMail => {
       setIsComposing(false)
       setDraftToEdit(null)
-      setFilterBy(prev => ({ ...prev, status: 'sent' }))  // switch to Sent folder, triggers mail refresh
+      setFilterBy(prev => ({ ...prev, status: 'sent' }))
     })
   }
 
@@ -121,18 +122,18 @@ export function MailIndex() {
           />
         </div>
 
-        {isComposing && (
+        {(isComposing || isComposeRoute) && (
           <MailCompose
             mail={draftToEdit}
             onClose={() => {
               setIsComposing(false)
               setDraftToEdit(null)
+              navigate('/mail')
             }}
             onSend={onSend}
             onSaveDraft={onSaveDraft}
           />
         )}
-
 
         <MailList
           mails={mails}

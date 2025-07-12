@@ -311,7 +311,6 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                     </button>
                 </div>
 
-
                 {!isModalOpen && (showColorPicker || showLabelPicker) && (
                     <div style={{ position: 'absolute', bottom: '100px', left: '6px' }}>
                         {showLabelPicker && (
@@ -425,7 +424,6 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                             />
                         )}
 
-
                         <input
                             type="file"
                             accept="image/*"
@@ -492,8 +490,6 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                                 overflow: 'hidden'
                             }}
                         />
-
-
 
                         {Array.isArray(txt) ? (
                             <ul className="modal-checklist" style={{ padding: 0, listStyle: 'none' }}>
@@ -607,6 +603,24 @@ function NoteItem({ note, onDelete, onUpdate, onDuplicate }) {
                                 title="Duplicate"
                             >
                                 <span className="material-symbols-outlined">content_copy</span>
+                            </button>
+
+                            <button
+                                className="note-action"
+                                onClick={(ev) => {
+                                    ev.stopPropagation()
+                                    const subject = encodeURIComponent(title || 'Note')
+                                    const body = encodeURIComponent(
+                                        Array.isArray(txt)
+                                            ? txt.map(item => `• ${item.text}${item.done ? ' (done)' : ''}`).join('\n')
+                                            : txt
+                                    )
+                                    window.location.href = `#/mail/compose?subject=${subject}&body=${body}`
+                                }}
+                                style={iconBtnStyle}
+                                title="Send as Mail"
+                            >
+                                <span className="material-symbols-outlined">forward_to_inbox</span>
                             </button>
 
                             {showLabelPicker && (
